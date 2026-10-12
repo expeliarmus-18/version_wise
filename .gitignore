@@ -1,0 +1,36 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Java and Maven
+target/
+*.class
+
+# Node.js and frontend builds
+node_modules/
+dist/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# IDE files
+.idea/
+.vscode/
+
+# Local databases and vector stores
+*.db
+*.sqlite
+chroma/
+chroma_db/
+
+# Logs and operating-system files
+*.log
+.DS_Store
+Thumbs.db
