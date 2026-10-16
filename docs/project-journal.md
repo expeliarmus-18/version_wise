@@ -358,3 +358,44 @@
 
 
 
+
+## Day 2 — Spring Boot Foundation and PostgreSQL Connectivity
+
+**Date:** 2026-10-16
+**Status:** IN PROGRESS — final documentation and Git review pending
+**Repository:** `C:\Users\tanma\Learning\PROJECT\VersionWise`
+
+### Implemented
+
+- Generated the backend using IntelliJ IDEA and Spring Initializr.
+- Configured Java 21 and Spring Boot 3.5.16.
+- Added Spring Web, Spring Data JPA, PostgreSQL JDBC, and Spring Boot Test dependencies.
+- Configured `application.yml` to read database settings from environment variables.
+- Added a health endpoint at `GET /api/health` (confirm the response separately if not already observed).
+
+### Verification evidence
+
+- Application startup logs show Spring Boot 3.5.16 running on Java 21.0.11.
+- Embedded Tomcat started on port 8080.
+- HikariCP successfully obtained a PostgreSQL connection and completed pool startup.
+- Hibernate initialized the JPA EntityManagerFactory.
+- PostgreSQL server version reported by Hibernate: 18.6.
+- Maven verification result: `BUILD SUCCESS`.
+
+### Security and database notes
+
+- Database username and password were configured through IntelliJ Run/Debug environment variables; no password is recorded here.
+- Confirm that local credentials and configuration are not committed.
+- The database name and application account privileges should be confirmed before claiming least-privilege configuration.
+- No application entities or schema migrations were implemented. Hibernate schema generation is configured as `none`.
+
+### Remaining closeout
+
+- Verify the HTTP health response.
+- Review changed files and Git status.
+- Confirm secrets and generated build outputs are not staged.
+- Update the root README with concise backend setup instructions if needed.
+
+### Next step
+
+After closeout, begin Day 3 according to the Master Chat plan. Preserve the existing architecture and avoid adding authentication or unrelated features before the next planned milestone.

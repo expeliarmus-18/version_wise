@@ -21,6 +21,21 @@ Users will analyze Maven dependency upgrades using deterministic rules, optional
 - Following MVP phase: Backend APIs, persistence, AI service, analysis pipeline and frontend integration.
 - DevOps: Deferred until the MVP is stable, starting Day 16 or later.
 
+
+
 ## Current status
 
 Day 1: Environment inspection completed. Repository foundation is being established. Application components have not yet been implemented.
+
+### Backend
+
+The backend uses Java 21, Spring Boot 3.5.16, Maven,
+Spring Web, Spring Data JPA, and PostgreSQL.
+
+Open the repository in IntelliJ IDEA and run
+`com.versionwise.backend.BackendApplication`.
+
+Configure `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD`
+in the run configuration before starting the application.
+
+Health endpoint: `http://localhost:8080/api/health`
