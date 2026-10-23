@@ -399,3 +399,54 @@
 ### Next step
 
 After closeout, begin Day 3 according to the Master Chat plan. Preserve the existing architecture and avoid adding authentication or unrelated features before the next planned milestone.
+
+
+## Day 3 — Project Entities, Persistence and CRUD API
+
+**Date:** 2026-10-23  
+**Status:** Completed — implementation, verification and Git commit completed  
+**Commit:** `4fdac5f feat(backend): implement project CRUD API`
+
+### Implemented
+
+- Added `User` and `Project` JPA entities with UUID identifiers.
+- Added `UserRepository` and `ProjectRepository`.
+- Added project request and response DTOs.
+- Implemented `ProjectService` for project creation, listing, retrieval, updating and deletion.
+- Implemented `ProjectController` with REST endpoints under `/api/projects`.
+- Added request validation using Spring Boot validation.
+- Configured Hibernate schema updates for local development.
+- Updated the root README with API documentation and development-only limitations.
+
+### API endpoints
+
+- `GET /api/health` — health check.
+- `POST /api/projects` — create a project.
+- `GET /api/projects` — list projects for the development user.
+- `GET /api/projects/{id}` — retrieve a project.
+- `PUT /api/projects/{id}` — update a project.
+- `DELETE /api/projects/{id}` — delete a project.
+
+### Verification
+
+- `mvnw.cmd clean compile` completed successfully.
+- Spring Boot started successfully and connected to PostgreSQL 18.6.
+- Manual Postman checks reportedly passed for health, project CRUD, validation errors, and retrieval of a deleted project.
+- `mvnw.cmd test` completed successfully: 1 test run, 0 failures, 0 errors, 0 skipped.
+- Database checks were reported as successful.
+- `git diff --check` reported no whitespace errors.
+- Git working tree was verified clean after commit `4fdac5f`.
+
+### Design decisions and limitations
+
+- A fixed development user, `dev@versionwise.local`, is used to associate projects with an owner.
+- Registration, authentication, and secure per-user authorization have not been implemented.
+- Hibernate `ddl-auto: update` is for local development; production schema management needs a migration strategy.
+- Automated tests currently do not provide comprehensive coverage of individual project CRUD operations.
+- No database password or other secret should be recorded in this journal.
+
+### Next steps
+
+- Update the project snapshot and pending-work checklist to reflect the completed backend CRUD milestone.
+- Continue with the next milestone specified by the VersionWise Master Chat plan.
+- Preserve the existing architecture and database data; avoid unrelated changes.
