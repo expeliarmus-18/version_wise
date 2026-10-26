@@ -8,10 +8,15 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.UUID;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.net.URI;
 import java.util.List;
-import java.util.UUID;
+
 
 @RestController
 @RequestMapping("/api/projects")
@@ -25,9 +30,9 @@ public class ProjectController {
 
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(
-            @Valid @RequestBody CreateProjectRequest request
+            @Valid @RequestBody CreateProjectRequest request,@AuthenticationPrincipal Jwt jwt
     ) {
-        ProjectResponse created = projectService.createProject(request);
+        ProjectResponse created = projectService.createProject(request, authenticatedUserId(jwt));
 
         return ResponseEntity
                 .created(URI.create("/api/projects/" + created.id()))
@@ -35,26 +40,36 @@ public class ProjectController {
     }
 
     @GetMapping
-    public List<ProjectResponse> getProjects() {
-        return projectService.getProjects();
+    public List<ProjectResponse> getProjects(@AuthenticationPrincipal Jwt jwt) {
+        return projectService.getProjects(authenticatedUserId(jwt));
     }
 
     @GetMapping("/{id}")
-    public ProjectResponse getProject(@PathVariable UUID id) {
-        return projectService.getProject(id);
+    public ProjectResponse getProject(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
+        return projectService.getProject(id, authenticatedUserId(jwt));
     }
 
     @PutMapping("/{id}")
     public ProjectResponse updateProject(
             @PathVariable UUID id,
-            @Valid @RequestBody CreateProjectRequest request
+            @Valid @RequestBody CreateProjectRequest request,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        return projectService.updateProject(id, request);
+        return projectService.updateProject(id, request, authenticatedUserId(jwt));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteProject(@PathVariable UUID id) {
-        projectService.deleteProject(id);
+    public void deleteProject(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
+        projectService.deleteProject(id, authenticatedUserId(jwt));
+    }
+
+    private UUID authenticatedUserId(Jwt jwt) {
+        try {
+            return UUID.fromString(jwt.getClaimAsString("uid"));
+        } catch (RuntimeException exception) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED, "Invalid authentication token");
+        }
     }
 }

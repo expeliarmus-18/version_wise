@@ -450,3 +450,40 @@ After closeout, begin Day 3 according to the Master Chat plan. Preserve the exis
 - Update the project snapshot and pending-work checklist to reflect the completed backend CRUD milestone.
 - Continue with the next milestone specified by the VersionWise Master Chat plan.
 - Preserve the existing architecture and database data; avoid unrelated changes.
+
+
+
+### Day 3 Completion Addendum — Authentication and Authorization
+
+**Status:** Implementation and verification completed  
+**Date:** 2026-10-26
+
+#### Implemented
+- Added Spring Security and OAuth2 Resource Server JWT support.
+- Added password hashing with BCrypt.
+- Added registration and login endpoints.
+- Added signed JWT access tokens with a one-hour expiry.
+- Configured stateless authentication.
+- Kept the health endpoint and authentication endpoints public.
+- Protected project endpoints with Bearer-token authentication.
+- Removed the fixed development-user identity from the backend.
+- Scoped project operations to the authenticated user's ID.
+- Added integration tests for authentication, validation, token rejection, and project ownership.
+
+#### Verification
+- Command: `mvnw.cmd clean verify`
+- Result: `BUILD SUCCESS`
+- Tests run: 8
+- Failures: 0
+- Errors: 0
+- Skipped: 0
+- Manual Postman checks: reported successful for health, registration, login, project CRUD, and cross-user access restrictions.
+
+#### Configuration and safety
+- JWT signing secret is supplied through the `JWT_SECRET` environment variable.
+- Database connection settings are supplied through environment variables.
+- The development database was used during integration tests and contained no data that needed to be preserved.
+- No Git commit was created as part of this work.
+
+#### Next milestone
+Continue with the next milestone in the VersionWise Master Chat project plan.

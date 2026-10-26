@@ -22,6 +22,14 @@ public class User {
     @Column(nullable = false, unique = true, length = 254)
     private String email;
 
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+
+    @Column(name = "password_hash", length = 100)
+    private String passwordHash;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -31,6 +39,11 @@ public class User {
 
     public User(String email) {
         this.email = email.trim().toLowerCase(java.util.Locale.ROOT);
+        this.createdAt = Instant.now();
+    }
+    public User(String email, String passwordHash) {
+        this.email = email.trim().toLowerCase(java.util.Locale.ROOT);
+        this.passwordHash = passwordHash;
         this.createdAt = Instant.now();
     }
 

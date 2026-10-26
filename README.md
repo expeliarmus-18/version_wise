@@ -23,9 +23,19 @@ Users will analyze Maven dependency upgrades using deterministic rules, optional
 
 
 
-## Current status
 
-Day 1: Environment inspection completed. Repository foundation is being established. Application components have not yet been implemented.
+## Current Status
+
+- **Days 1–2:** Development environment, repository foundation, Spring Boot backend setup, and PostgreSQL connectivity established.
+- **Day 3:** Implemented project CRUD REST APIs and JWT-based authentication and authorization.
+- **Authentication:** User registration, BCrypt password hashing, login, and signed, expiring JWT access tokens.
+- **Authorization:** Project endpoints require authentication. Project access is scoped to the authenticated user's ID, and access to another user's project returns `404 Not Found`.
+- **Public endpoints:** `GET /api/health`, `POST /api/auth/register`, and `POST /api/auth/login`.
+- **Project endpoints:** `POST`, `GET`, `PUT`, and `DELETE` under `/api/projects` require a Bearer token.
+- **Configuration:** PostgreSQL credentials and the JWT signing secret are supplied through environment variables. Do not commit secrets.
+- **Verification:** `mvnw.cmd clean verify` completed successfully with 8 tests, 0 failures, 0 errors, and 0 skipped. Manual Postman checks also passed.
+- **Next:** Continue with the next milestone defined in the VersionWise Master Chat project plan.
+
 
 ### Backend
 

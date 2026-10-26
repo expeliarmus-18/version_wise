@@ -18,7 +18,7 @@ import java.util.UUID;
 @Service
 public class ProjectService {
 
-    private static final String DEV_EMAIL = "dev@versionwise.local";
+
 
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
@@ -32,8 +32,9 @@ public class ProjectService {
     }
 
     @Transactional
-    public ProjectResponse createProject(CreateProjectRequest request) {
-        User owner = getOrCreateDevelopmentUser();
+    public ProjectResponse createProject(
+            CreateProjectRequest request, UUID userId) {
+        User owner = getAuthenticatedUser(userId);
 
         Project project = new Project(
                 request.name().trim(),
@@ -47,28 +48,28 @@ public class ProjectService {
     }
 
     @Transactional
-    public List<ProjectResponse> getProjects() {
-        User owner = getOrCreateDevelopmentUser();
+    public List<ProjectResponse> getProjects(UUID userId) {
+        User owner = getAuthenticatedUser(userId);
 
-        return projectRepository
-                .findByOwnerIdOrderByCreatedAtDesc(owner.getId())
+        return projectRepository.findByOwnerIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(ProjectResponse::from)
                 .toList();
     }
 
     @Transactional
-    public ProjectResponse getProject(UUID id) {
-        User owner = getOrCreateDevelopmentUser();
+    public ProjectResponse getProject(UUID id,UUID userId) {
+        User owner = getAuthenticatedUser(userId);
         return ProjectResponse.from(findOwnedProject(id, owner.getId()));
     }
 
     @Transactional
     public ProjectResponse updateProject(
             UUID id,
-            CreateProjectRequest request
+            CreateProjectRequest request,
+            UUID userId
     ) {
-        User owner = getOrCreateDevelopmentUser();
+        User owner = getAuthenticatedUser(userId);
         Project project = findOwnedProject(id, owner.getId());
 
         project.setName(request.name().trim());
@@ -82,17 +83,20 @@ public class ProjectService {
     }
 
     @Transactional
-    public void deleteProject(UUID id) {
-        User owner = getOrCreateDevelopmentUser();
+    public void deleteProject(UUID id,UUID userId) {
+        User owner = getAuthenticatedUser(userId);
         Project project = findOwnedProject(id, owner.getId());
         projectRepository.delete(project);
     }
 
-    private User getOrCreateDevelopmentUser() {
-        return userRepository.findByEmail(DEV_EMAIL)
-                .orElseGet(() ->
-                        userRepository.save(new User(DEV_EMAIL)));
+
+    private User getAuthenticatedUser(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "User not found"));
     }
+
+
 
     private Project findOwnedProject(UUID projectId, UUID ownerId) {
         return projectRepository.findByIdAndOwner_Id(projectId, ownerId)
