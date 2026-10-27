@@ -455,7 +455,7 @@ After closeout, begin Day 3 according to the Master Chat plan. Preserve the exis
 
 ### Day 3 Completion Addendum — Authentication and Authorization
 
-**Status:** Implementation and verification completed  
+**Status:** Implementation and verification completed
 **Date:** 2026-10-26
 
 #### Implemented
@@ -487,3 +487,46 @@ After closeout, begin Day 3 according to the Master Chat plan. Preserve the exis
 
 #### Next milestone
 Continue with the next milestone in the VersionWise Master Chat project plan.
+
+
+
+## Day 4 — Frontend and Authentication Integration
+
+**Status:** Core implementation and manual integration checks completed.
+
+### Work completed
+
+- Set up the React + Vite frontend in `frontend/`.
+- Implemented a custom VersionWise sign-in and account-registration interface.
+- Added a frontend API client for communicating with the Spring Boot backend.
+- Integrated login and registration with the existing authentication endpoints.
+- Added JWT-based authenticated requests using the Bearer authorization header.
+- Added frontend session handling, authenticated workspace UI, and logout behavior.
+- Configured backend CORS to allow the local Vite development origin at `http://localhost:5173`.
+- Added a protected-projects API check to verify authenticated frontend requests.
+
+### Authentication and authorization
+
+The backend uses stateless JWT authentication. Passwords are handled by the backend authentication service, and the frontend uses the returned access token for protected API requests. Spring Security protects project endpoints, while project authorization restricts access according to the authenticated user.
+
+### Verification performed
+
+- Confirmed the custom VersionWise interface renders in the browser.
+- Frontend production build completed successfully.
+- Frontend lint completed with zero warnings and errors.
+- Backend compilation completed successfully using `mvnw.cmd -DskipTests compile`.
+- Manually tested registration and login using multiple users.
+- Tested invalid login credentials and confirmed they were rejected.
+- Confirmed the frontend could call the protected projects endpoint with an authenticated request.
+- Checked that different users received the expected user-specific project data.
+
+### Notes and remaining work
+
+- The backend compile command skipped tests; it was a compilation check, not the full backend test suite.
+- Manual integration checks passed. Complete the planned final verification after the remaining Day 4 documentation and repository cleanup.
+- The frontend currently targets the local development backend by default. Production deployment configuration and production-grade token-storage/security review remain future work.
+- Temporary frontend source-bundle files should not be committed; the maintained application source belongs in `frontend/`.
+
+### Next milestone
+
+Day 5: build the project dashboard and project creation/listing workflow, then begin integrating the dependency-analysis form and results/history UI with the existing backend APIs.
