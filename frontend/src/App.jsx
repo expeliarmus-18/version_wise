@@ -1,8 +1,7 @@
-import { useState } from 'react'
+import {  useCallback, useEffect, useState} from 'react'
 import { apiRequest, getApiErrorMessage } from './api/client.js'
 import { clearSession, getSession, saveSession } from './auth/session.js'
 import './App.css'
-
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function Brand() {
@@ -77,27 +76,400 @@ function AuthPage({ onLogin }) {
   </main>
 }
 
+
 function Dashboard({ session, onLogout }) {
-  const [result, setResult] = useState({ status: 'idle', text: '' })
-  async function checkApi() {
-    setResult({ status: 'loading', text: '' })
+  const [projects, setProjects] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
+  const [formOpen, setFormOpen] = useState(false)
+  const [editingProject, setEditingProject] = useState(null)
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [formError, setFormError] = useState('')
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+
+  const handleError = useCallback((err) => {
+    if (err?.status === 401) {
+      clearSession()
+      onLogout()
+      return 'Your session has expired. Please sign in again.'
+    }
+    if (err?.status === 403) {
+      return 'You are not authorized to perform this action.'
+    }
+    return getApiErrorMessage(err)
+  }, [onLogout])
+
+  const loadProjects = useCallback(async () => {
+    setLoading(true)
+    setError('')
     try {
-      const projects = await apiRequest('/api/projects', { token: session.accessToken })
-      setResult({ status: 'success', text: `Authenticated request succeeded. Projects returned: ${Array.isArray(projects) ? projects.length : 'response received'}.` })
-    } catch (error) {
-      setResult({ status: 'error', text: getApiErrorMessage(error) })
+      const data = await apiRequest('/api/projects', {
+        token: session.accessToken,
+      })
+      setProjects(Array.isArray(data) ? data : [])
+    } catch (err) {
+      setError(handleError(err))
+    } finally {
+      setLoading(false)
+    }
+  }, [session.accessToken, handleError])
+
+  useEffect(() => {
+    loadProjects()
+  }, [loadProjects])
+
+  function openCreateForm() {
+    setEditingProject(null)
+    setName('')
+    setDescription('')
+    setFormError('')
+    setFormOpen(true)
+  }
+
+  function openEditForm(project) {
+    setEditingProject(project)
+    setName(project.name || '')
+    setDescription(project.description || '')
+    setFormError('')
+    setSelectedProject(null)
+    setFormOpen(true)
+  }
+
+  function closeForm() {
+    if (saving) return
+    setFormOpen(false)
+    setEditingProject(null)
+    setFormError('')
+  }
+
+  async function submitProject(event) {
+    event.preventDefault()
+    setFormError('')
+    setNotice('')
+
+    const cleanName = name.trim()
+    const cleanDescription = description.trim()
+
+    if (!cleanName) {
+      setFormError('Project name is required.')
+      return
+    }
+    if (cleanName.length > 100) {
+      setFormError('Project name must not exceed 100 characters.')
+      return
+    }
+    if (cleanDescription.length > 1000) {
+      setFormError('Description must not exceed 1,000 characters.')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const updating = Boolean(editingProject)
+      const path = updating
+        ? `/api/projects/${editingProject.id}`
+        : '/api/projects'
+
+      await apiRequest(path, {
+        method: updating ? 'PUT' : 'POST',
+        token: session.accessToken,
+        body: {
+          name: cleanName,
+          description: cleanDescription || null,
+        },
+      })
+
+      setFormOpen(false)
+      setEditingProject(null)
+      setName('')
+      setDescription('')
+      setNotice(updating ? 'Project updated successfully.' : 'Project created successfully.')
+      await loadProjects()
+    } catch (err) {
+      setFormError(handleError(err))
+    } finally {
+      setSaving(false)
     }
   }
-  return <main className="dashboard"><header className="dashboard-header"><Brand /><button className="logout" onClick={onLogout}>Sign out ↗</button></header><section className="dashboard-main"><p className="eyebrow dark">YOUR WORKSPACE</p><h1>You're signed in<span className="green">.</span></h1><p className="dashboard-intro">Welcome to VersionWise. Your authenticated session is ready.</p>
-    <div className="user-card"><div className="avatar">{(session.user?.email || 'U').charAt(0).toUpperCase()}</div><div><p className="card-label">SIGNED IN AS</p><strong>{session.user?.email}</strong><p className="user-id">Account ID: {session.user?.id || 'Unavailable'}</p></div><span className="active-pill">● SESSION ACTIVE</span></div>
-    <div className="api-card"><p className="form-kicker">API CONNECTION</p><h2>Authenticated projects endpoint</h2><p>Check the protected projects endpoint to verify the frontend sends your JWT as a Bearer token.</p><button className="primary-button check-button" onClick={checkApi} disabled={result.status === 'loading'}>{result.status === 'loading' ? 'Checking endpoint…' : 'Check authenticated API'} <span>→</span></button>{result.status !== 'idle' && result.status !== 'loading' && <div className={`api-result ${result.status}`} role={result.status === 'error' ? 'alert' : 'status'}>{result.text}</div>}</div>
-    <p className="scope-note"><strong>Day 4 MVP foundation</strong><br />Project creation, dependency analysis, results, and history are planned for the next milestone.</p>
-  </section><footer className="dashboard-footer">VERSIONWISE <span>•</span> DEPENDENCY UPGRADE INTELLIGENCE</footer></main>
+
+  async function viewProject(project) {
+    setDetailLoading(true)
+    setSelectedProject(null)
+    setError('')
+    setNotice('')
+    try {
+      const data = await apiRequest(`/api/projects/${project.id}`, {
+        token: session.accessToken,
+      })
+      setSelectedProject(data)
+    } catch (err) {
+      setError(handleError(err))
+    } finally {
+      setDetailLoading(false)
+    }
+  }
+
+  async function deleteProject(project) {
+    const confirmed = window.confirm(
+      `Delete "${project.name}"? This action cannot be undone.`,
+    )
+    if (!confirmed) return
+
+    setDeletingId(project.id)
+    setError('')
+    setNotice('')
+
+    try {
+      await apiRequest(`/api/projects/${project.id}`, {
+        method: 'DELETE',
+        token: session.accessToken,
+      })
+      setProjects(current => current.filter(item => item.id !== project.id))
+      setSelectedProject(current => current?.id === project.id ? null : current)
+      setNotice(`"${project.name}" was deleted.`)
+    } catch (err) {
+      setError(handleError(err))
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  function formatDate(value) {
+    if (!value) return 'Date unavailable'
+    const date = new Date(value)
+    return Number.isNaN(date.getTime())
+      ? 'Date unavailable'
+      : date.toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        })
+  }
+
+  return (
+    <main className="dashboard">
+      <header className="dashboard-header">
+        <Brand />
+        <div className="dashboard-header-actions">
+          <span className="signed-in-email">{session.user?.email}</span>
+          <button className="logout" onClick={onLogout} type="button">
+            Sign out
+          </button>
+        </div>
+      </header>
+
+      <section className="dashboard-main">
+        <div className="projects-heading">
+          <div>
+            <p className="eyebrow dark">YOUR WORKSPACE</p>
+            <h1>Your projects<span className="green">.</span></h1>
+            <p className="dashboard-intro">
+              Organize your Java projects and prepare them for dependency analysis.
+            </p>
+          </div>
+          <button className="primary-button create-project-button" onClick={openCreateForm} type="button">
+            <span>+</span> New project
+          </button>
+        </div>
+
+        <div className="user-card">
+          <div className="avatar">
+            {(session.user?.email || 'U').charAt(0).toUpperCase()}
+          </div>
+          <div className="account-info">
+            <p className="card-label">SIGNED IN AS</p>
+            <strong>{session.user?.email}</strong>
+            <p className="user-id">Account ID: {session.user?.id || 'Unavailable'}</p>
+          </div>
+          <span className="active-pill">SESSION ACTIVE</span>
+        </div>
+
+        {notice && <div className="notice success" role="status">{notice}</div>}
+        {error && <div className="notice error" role="alert">{error}</div>}
+
+        <section className="projects-section">
+          <div className="section-heading">
+            <div>
+              <h2>All projects</h2>
+              <p>{projects.length} {projects.length === 1 ? 'project' : 'projects'} in your workspace</p>
+            </div>
+            <button className="secondary-button" type="button" onClick={loadProjects} disabled={loading}>
+              {loading ? 'Refreshing…' : 'Refresh'}
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="projects-state">
+              <span className="spinner" /> Loading your projects…
+            </div>
+          ) : error && projects.length === 0 ? (
+            <div className="projects-state">
+              <p>We couldn't load your projects.</p>
+              <button className="secondary-button" type="button" onClick={loadProjects}>
+                Try again
+              </button>
+            </div>
+          ) : projects.length === 0 ? (
+            <div className="empty-projects">
+              <div className="empty-project-icon">V</div>
+              <h3>Your workspace starts here</h3>
+              <p>Create your first project to begin organizing your dependency-upgrade work.</p>
+              <button className="primary-button" type="button" onClick={openCreateForm}>
+                Create your first project
+              </button>
+            </div>
+          ) : (
+            <div className="project-grid">
+              {projects.map(project => (
+                <article className="project-card" key={project.id}>
+                  <div className="project-card-top">
+                    <span className="project-icon">V</span>
+                    <span className="project-status">Project</span>
+                  </div>
+                  <h3>{project.name}</h3>
+                  <p className="project-description">
+                    {project.description || 'No description added yet.'}
+                  </p>
+                  <p className="project-date">Created {formatDate(project.createdAt)}</p>
+                  <div className="project-card-actions">
+                    <button type="button" className="secondary-button" onClick={() => viewProject(project)}>
+                      View
+                    </button>
+                    <button type="button" className="secondary-button" onClick={() => openEditForm(project)}>
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="danger-button"
+                      onClick={() => deleteProject(project)}
+                      disabled={deletingId === project.id}
+                    >
+                      {deletingId === project.id ? 'Deleting…' : 'Delete'}
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {detailLoading && <div className="detail-panel">Loading project details…</div>}
+
+        {selectedProject && (
+          <section className="detail-panel">
+            <div className="section-heading">
+              <div>
+                <p className="form-kicker">PROJECT DETAILS</p>
+                <h2>{selectedProject.name}</h2>
+              </div>
+              <button className="secondary-button" type="button" onClick={() => setSelectedProject(null)}>
+                Close
+              </button>
+            </div>
+            <p className="detail-description">
+              {selectedProject.description || 'No description provided.'}
+            </p>
+            <dl className="project-metadata">
+              <div>
+                <dt>Project ID</dt>
+                <dd>{selectedProject.id}</dd>
+              </div>
+              <div>
+                <dt>Owner ID</dt>
+                <dd>{selectedProject.ownerId || 'Unavailable'}</dd>
+              </div>
+              <div>
+                <dt>Created</dt>
+                <dd>{formatDate(selectedProject.createdAt)}</dd>
+              </div>
+            </dl>
+            <button className="primary-button" type="button" onClick={() => openEditForm(selectedProject)}>
+              Edit project
+            </button>
+          </section>
+        )}
+
+        {formOpen && (
+          <div className="project-modal-backdrop" onMouseDown={event => {
+            if (event.target === event.currentTarget) closeForm()
+          }}>
+            <section className="project-modal" role="dialog" aria-modal="true" aria-labelledby="project-form-title">
+              <div className="section-heading">
+                <div>
+                  <p className="form-kicker">{editingProject ? 'UPDATE WORKSPACE' : 'GET STARTED'}</p>
+                  <h2 id="project-form-title">{editingProject ? 'Edit project' : 'Create a project'}</h2>
+                </div>
+                <button className="modal-close" type="button" onClick={closeForm} aria-label="Close form">×</button>
+              </div>
+
+              <form onSubmit={submitProject} noValidate>
+                <label htmlFor="project-name">Project name</label>
+                <input
+                  id="project-name"
+                  className="project-form-input"
+                  value={name}
+                  onChange={event => setName(event.target.value)}
+                  placeholder="e.g. Payment Service"
+                  maxLength={100}
+                  required
+                  autoFocus
+                />
+                <div className="character-count">{name.length}/100 characters</div>
+
+                <label htmlFor="project-description">Description <span className="optional-label">(optional)</span></label>
+                <textarea
+                  id="project-description"
+                  className="project-form-input project-form-textarea"
+                  value={description}
+                  onChange={event => setDescription(event.target.value)}
+                  placeholder="What does this project do?"
+                  maxLength={1000}
+                  rows={4}
+                />
+                <div className="character-count">{description.length}/1000 characters</div>
+
+                {formError && <div className="notice error" role="alert">{formError}</div>}
+
+                <div className="project-form-actions">
+                  <button className="secondary-button" type="button" onClick={closeForm} disabled={saving}>
+                    Cancel
+                  </button>
+                  <button className="primary-button" type="submit" disabled={saving}>
+                    {saving ? 'Saving…' : editingProject ? 'Save changes' : 'Create project'}
+                  </button>
+                </div>
+              </form>
+            </section>
+          </div>
+        )}
+
+        <p className="scope-note">
+          <strong>Day 5 milestone</strong><br />
+          Project management is connected to your authenticated backend. Dependency analysis will be added in a later milestone.
+        </p>
+      </section>
+
+      <footer className="dashboard-footer">
+        VERSIONWISE <span>•</span> DEPENDENCY UPGRADE INTELLIGENCE
+      </footer>
+    </main>
+  )
 }
+
 
 export default function App() {
   const [session, setSession] = useState(() => getSession())
-  function logout() { clearSession(); setSession(null) }
+
+  function logout() {
+    clearSession()
+    setSession(null)
+  }
+
   if (session) return <Dashboard session={session} onLogout={logout} />
   return <AuthPage onLogin={() => setSession(getSession())} />
 }

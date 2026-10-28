@@ -527,6 +527,36 @@ The backend uses stateless JWT authentication. Passwords are handled by the back
 - The frontend currently targets the local development backend by default. Production deployment configuration and production-grade token-storage/security review remain future work.
 - Temporary frontend source-bundle files should not be committed; the maintained application source belongs in `frontend/`.
 
-### Next milestone
+## Day 5 — Authenticated Project Dashboard and CRUD
 
-Day 5: build the project dashboard and project creation/listing workflow, then begin integrating the dependency-analysis form and results/history UI with the existing backend APIs.
+### Objective
+Connect the React frontend to the existing authenticated project API and replace the temporary API-check dashboard with functional project management.
+
+### Implementation
+- Preserved the existing frontend registration, login, session, and logout flow.
+- Integrated the dashboard with the protected `/api/projects` endpoints using the existing API client and JWT Bearer token.
+- Implemented project listing, creation, detail viewing, editing, and deletion.
+- Added project form validation aligned with backend constraints: name is required and limited to 100 characters; description is optional and limited to 1,000 characters.
+- Added loading, empty, success, and error states, along with delete confirmation and responsive project-management UI.
+- Used the existing backend authorization and ownership rules; no new authentication mechanism was introduced.
+- Kept dependency analysis outside the Day 5 scope.
+
+### Verification
+- Manually verified all eight dashboard workflow checks:
+  1. Sign in and load projects.
+  2. Create a project.
+  3. View project details.
+  4. Edit a project.
+  5. Delete a project after confirmation.
+  6. Refresh and confirm the deleted project remains deleted.
+  7. Sign out.
+  8. Sign back in and confirm session and project-list behavior.
+- All eight checks passed in the user's environment.
+- `git diff --check` completed without reporting whitespace errors. Git displayed LF-to-CRLF line-ending warnings.
+- Frontend lint/build results were not included in the recorded verification output.
+
+### Outcome
+The authenticated frontend supports project CRUD through the existing backend API. Day 5 is ready for documentation review and version control.
+
+### Next Milestone
+Day 6: establish the Python FastAPI foundation and implement Maven dependency parsing. Keep dependency-risk analysis, historical ML, retrieval, and LLM report generation for their planned later milestones.

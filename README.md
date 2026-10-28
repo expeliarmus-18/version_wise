@@ -20,17 +20,32 @@ Users will analyze Maven dependency upgrades using deterministic rules, optional
 - **Days 1–2:** Development environment, repository setup, backend foundation, and PostgreSQL connectivity.
 - **Day 3:** Project CRUD REST APIs, JWT authentication, and project authorization.
 - **Day 4:** React frontend, registration and login UI, authenticated API integration, and session handling.
-- **Following MVP phase:** Backend APIs, persistence, AI service, analysis pipeline, and further frontend integration.
+- Completed
+
+Backend foundation: Java 21, Spring Boot, Maven, and PostgreSQL.
+
+Authentication and authorization: registration, login, BCrypt password hashing, JWT-based stateless authentication, and user-scoped project access.
+
+Frontend authentication: React registration and login flow, authenticated session handling, and logout.
+
+Project management: authenticated project listing, creation, detail viewing, editing, and deletion.
+
+Dashboard UX: loading, empty, success, and error states; form validation; delete confirmation; responsive project cards.
 - **DevOps:** Deferred until the MVP is stable, starting Day 16 or later.
 
-## Current Status
+Current MVP Progress
 
-### Completed
+Completed
 
-- **Days 1–2:** Development environment, repository foundation, Spring Boot backend setup, and PostgreSQL connectivity established.
-- **Day 3:** Project CRUD REST APIs and JWT-based authentication and authorization implemented.
-- **Day 4:** Custom React + Vite frontend, registration and login interface, authenticated workspace, API client, and JWT Bearer-token integration implemented.
+Backend foundation: Java 21, Spring Boot, Maven, and PostgreSQL.
 
+Authentication and authorization: registration, login, BCrypt password hashing, JWT-based stateless authentication, and user-scoped project access.
+
+Frontend authentication: React registration and login flow, authenticated session handling, and logout.
+
+Project management: authenticated project listing, creation, detail viewing, editing, and deletion.
+
+Dashboard UX: loading, empty, success, and error states; form validation; delete confirmation; responsive project cards.
 ### Authentication
 
 - User registration through `POST /api/auth/register`.
@@ -267,9 +282,18 @@ Invalid credentials are rejected by the backend.
 - Browser-side token storage has security trade-offs. Review token storage, XSS protections, HTTPS, and session expiration behavior before production deployment.
 - JWT signing secrets and database credentials must be managed securely outside source control.
 - The Python AI service, retrieval infrastructure, hosted LLM integration, and complete dependency-analysis pipeline remain planned work until implemented and verified.
+Current Architecture
 
-## Next Milestone
+Frontend: React, JavaScript, Vite.
 
-**Day 5:** Continue with the VersionWise Master Chat project plan, focusing on the project dashboard, project creation and listing, and the next dependency-analysis workflow components.
+Backend: Java, Spring Boot, Spring Security, JWT, Spring Data JPA.
 
-The immediate goal is to build on the working authentication foundation without revisiting completed setup work.
+Database: PostgreSQL.
+
+API authentication: protected requests use the JWT Bearer token.
+
+Roadmap
+
+The next milestone is the Python FastAPI foundation and Maven dependency parsing. Deterministic dependency-upgrade risk analysis, historical failure-category ML, documentation retrieval, and LLM-generated reports remain future milestones.
+
+The MVP is being developed incrementally. Features listed as roadmap items should not be considered implemented until their milestones are completed and verified.
