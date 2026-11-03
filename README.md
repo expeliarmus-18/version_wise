@@ -297,3 +297,96 @@ Roadmap
 The next milestone is the Python FastAPI foundation and Maven dependency parsing. Deterministic dependency-upgrade risk analysis, historical failure-category ML, documentation retrieval, and LLM-generated reports remain future milestones.
 
 The MVP is being developed incrementally. Features listed as roadmap items should not be considered implemented until their milestones are completed and verified.
+
+
+## Python AI Service
+
+VersionWise includes an independent Python analysis service built with FastAPI. The service is responsible for Maven dependency parsing and will support future dependency-upgrade risk analysis.
+
+### Technology
+
+- Python 3.10.11
+- FastAPI
+- Pydantic
+- Uvicorn
+- defusedxml
+- pytest
+- HTTPX
+
+### Environment Setup
+
+The Python service uses a dedicated virtual environment located at `ai-service/.versionwise`.
+
+From the repository root, run:
+
+```cmd
+cd ai-service
+
+python -m venv .versionwise
+
+.versionwise\Scripts\activate
+
+python -m pip install --upgrade pip
+
+python -m pip install -r requirements.txt
+```
+
+### Start the Service
+
+From the `ai-service` directory, with the virtual environment activated:
+
+```cmd
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+### Health Endpoint
+
+`GET /health`
+
+Returns the service status.
+
+### Maven POM Parsing
+
+`POST /api/v1/parse-pom`
+
+Accepts Maven POM XML through a JSON request:
+
+```json
+{
+  "pom_xml": "<project><groupId>com.example</groupId><artifactId>demo</artifactId><version>1.0</version></project>"
+}
+```
+
+The response includes:
+
+- Project coordinates
+- Parent coordinates
+- Direct dependencies
+- Dependency-management entries
+- Resolved and unresolved version expressions
+- Dependency scope, type, classifier and optional metadata
+- Parsing warnings
+
+### Parser Capabilities and Limitations
+
+The parser supports Maven XML namespaces, direct dependencies, dependency-management declarations, local property substitution, nested property references and parent coordinate extraction.
+
+Unresolved property expressions are preserved and flagged.
+
+The parser does not implement complete Maven effective-POM resolution. Parent inheritance, imported BOM resolution, transitive dependencies, activated profiles, Maven settings and environment-specific properties are not resolved.
+
+The service does not currently persist uploaded POM files or require PostgreSQL.
+
+### Automated Testing
+
+From `ai-service`, run:
+
+```cmd
+python -m pytest -v
+```
+
+Day 6 verification result: 21 tests passed, 0 failures, with one Starlette deprecation warning.
+
+### Next Milestone
+
+Day 7 will introduce a deterministic dependency-upgrade risk engine using the structured Maven dependency information produced by this service.

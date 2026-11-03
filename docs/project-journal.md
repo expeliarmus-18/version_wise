@@ -558,5 +558,48 @@ Connect the React frontend to the existing authenticated project API and replace
 ### Outcome
 The authenticated frontend supports project CRUD through the existing backend API. Day 5 is ready for documentation review and version control.
 
-### Next Milestone
-Day 6: establish the Python FastAPI foundation and implement Maven dependency parsing. Keep dependency-risk analysis, historical ML, retrieval, and LLM report generation for their planned later milestones.
+# Day 6 — Python FastAPI Foundation and Maven Dependency Parsing
+
+## Objective
+
+Establish the independent Python analysis service and implement a reusable Maven POM dependency parser.
+
+## Implementation
+
+- Established a Python 3.10.11 virtual environment at `ai-service/.versionwise`.
+- Configured FastAPI, Pydantic and Uvicorn.
+- Implemented `GET /health`.
+- Implemented a reusable Maven POM parser using secure XML parsing.
+- Extracted project and parent coordinates.
+- Extracted direct dependencies and dependency-management entries separately.
+- Implemented local Maven property substitution, including nested properties.
+- Preserved unresolved expressions and reported parsing warnings.
+- Implemented structured Pydantic response models.
+- Exposed the parser through `POST /api/v1/parse-pom`.
+- Added automated parser and API tests.
+
+## Verification
+
+Actual pytest output:
+
+- 21 tests collected.
+- 21 tests passed.
+- 0 failures.
+- 1 Starlette deprecation warning.
+- Execution time: 3.92 seconds.
+
+The health endpoint returned HTTP 200.
+
+The POM parsing endpoint returned structured dependency information through the FastAPI API.
+
+## Limitations
+
+The parser is not a complete Maven effective-POM resolver.
+
+It does not resolve parent inheritance, imported BOMs, transitive dependencies, activated profiles, Maven settings or environment-specific properties.
+
+The service is intended for controlled internal development use and is not configured for direct public exposure.
+
+## Next Milestone — Day 7
+
+Implement the deterministic dependency-upgrade risk engine using the structured dependency data produced by the Maven parser.
