@@ -298,95 +298,32 @@ The next milestone is the Python FastAPI foundation and Maven dependency parsing
 
 The MVP is being developed incrementally. Features listed as roadmap items should not be considered implemented until their milestones are completed and verified.
 
+Dependency Analysis (Python FastAPI)
+VersionWise includes an independent Python FastAPI analysis service under ai-service/.
+Current capabilities
+- Parse Maven pom.xml dependency declarations into structured Pydantic models.
+- Compare a dependency's current version with a proposed target version using a bounded version comparator.
+- Calculate an explainable deterministic upgrade-risk score using explicit rules.
+- Return risk factors, score/category, warnings, and recommendations through the analysis API.
+API endpoints
+Method	Endpoint	Purpose
+GET	/health	Check Python service health
+POST	/api/v1/parse-pom	Parse Maven POM dependency declarations
+POST	/api/v1/analyze-upgrade	Analyze a proposed dependency upgrade
 
-## Python AI Service
 
-VersionWise includes an independent Python analysis service built with FastAPI. The service is responsible for Maven dependency parsing and will support future dependency-upgrade risk analysis.
-
-### Technology
-
-- Python 3.10.11
-- FastAPI
-- Pydantic
-- Uvicorn
-- defusedxml
-- pytest
-- HTTPX
-
-### Environment Setup
-
-The Python service uses a dedicated virtual environment located at `ai-service/.versionwise`.
-
-From the repository root, run:
-
-```cmd
-cd ai-service
-
-python -m venv .versionwise
-
+Interactive API documentation is available at /docs while the service is running locally.
+Run the analysis service
+From the repository's ai-service directory, activate the existing virtual environment and start Uvicorn:
 .versionwise\Scripts\activate
+python -m uvicorn app.main:app --reload
+The local service is available at http://127.0.0.1:8000; Swagger UI is at http://127.0.0.1:8000/docs.
 
-python -m pip install --upgrade pip
+Run the Python tests from ai-service:
+pytest
+Risk-score interpretation and current limitations
+The current risk engine is deterministic and rule-based. Its score is a heuristic, not a probability of upgrade failure and not yet an ML prediction. The comparator supports a bounded set of version formats; ambiguous or unsupported formats return unknown.
 
-python -m pip install -r requirements.txt
-```
+The Maven parser is not a full Maven effective-POM resolver. Parent inheritance, imported BOM resolution, transitive dependencies, profile activation, Maven settings, and environment-specific resolution are outside its current scope.
 
-### Start the Service
-
-From the `ai-service` directory, with the virtual environment activated:
-
-```cmd
-python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-### Health Endpoint
-
-`GET /health`
-
-Returns the service status.
-
-### Maven POM Parsing
-
-`POST /api/v1/parse-pom`
-
-Accepts Maven POM XML through a JSON request:
-
-```json
-{
-  "pom_xml": "<project><groupId>com.example</groupId><artifactId>demo</artifactId><version>1.0</version></project>"
-}
-```
-
-The response includes:
-
-- Project coordinates
-- Parent coordinates
-- Direct dependencies
-- Dependency-management entries
-- Resolved and unresolved version expressions
-- Dependency scope, type, classifier and optional metadata
-- Parsing warnings
-
-### Parser Capabilities and Limitations
-
-The parser supports Maven XML namespaces, direct dependencies, dependency-management declarations, local property substitution, nested property references and parent coordinate extraction.
-
-Unresolved property expressions are preserved and flagged.
-
-The parser does not implement complete Maven effective-POM resolution. Parent inheritance, imported BOM resolution, transitive dependencies, activated profiles, Maven settings and environment-specific properties are not resolved.
-
-The service does not currently persist uploaded POM files or require PostgreSQL.
-
-### Automated Testing
-
-From `ai-service`, run:
-
-```cmd
-python -m pytest -v
-```
-
-Day 6 verification result: 21 tests passed, 0 failures, with one Starlette deprecation warning.
-
-### Next Milestone
-
-Day 7 will introduce a deterministic dependency-upgrade risk engine using the structured Maven dependency information produced by this service.
+Machine learning, historical outcome data, RAG-based evidence retrieval, and LLM explanations are planned future capabilities and are not represented as completed features.

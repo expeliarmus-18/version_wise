@@ -1,0 +1,29 @@
+
+VersionWise Day 7 patch bundle
+
+Copy the app/ and tests/ subfolders into:
+C:\Users\tanma\Learning\PROJECT\VersionWise\ai-service
+
+Then make these two small existing-file edits:
+
+1) ai-service/app/main.py
+Add:
+    from app.api.routes.analysis import router as analysis_router
+Then after existing parser include_router, add:
+    app.include_router(analysis_router, prefix="/api/v1", tags=["Dependency Analysis"])
+
+2) ai-service/requirements.txt
+No new runtime dependency is required by this initial conservative comparator.
+Existing pytest and FastAPI dependencies are reused.
+
+Important review note:
+This comparator intentionally supports a bounded subset of Maven version forms.
+It is not Apache Maven's complete ComparableVersion implementation; unsupported qualifiers return UNKNOWN.
+Review this limitation and the tests before treating it as an authoritative Maven resolver.
+
+Run tests from CMD:
+    cd /d C:\Users\tanma\Learning\PROJECT\VersionWise\ai-service
+    .versionwise\Scripts\activate
+    pytest
+
+Do not commit or push until the tests and Git diff have been reviewed.

@@ -597,9 +597,55 @@ The POM parsing endpoint returned structured dependency information through the 
 The parser is not a complete Maven effective-POM resolver.
 
 It does not resolve parent inheritance, imported BOMs, transitive dependencies, activated profiles, Maven settings or environment-specific properties.
-
 The service is intended for controlled internal development use and is not configured for direct public exposure.
+Day 7 — Deterministic Dependency-Upgrade Risk Engine
+Status: Implementation and verification completed.
+Objective
+Build a deterministic, explainable baseline for evaluating Maven dependency upgrades. The engine compares a current dependency version with a proposed target version, applies explicit risk rules, and returns a structured analysis through the Python FastAPI service.
+Implementation
+- Added a bounded Maven version comparison utility in ai-service/app/analysis/version_comparator.py.
+- Added deterministic risk scoring rules in ai-service/app/analysis/rule_engine.py.
+- Added structured risk-analysis models in ai-service/app/models/risk.py.
+- Added the risk-analysis endpoint in ai-service/app/api/routes/analysis.py.
+- Registered the analysis router in ai-service/app/main.py.
+- Added tests for version comparison, rule scoring, and the analysis API.
+- Updated ai-service/pytest.ini with pythonpath = . so pytest can import the app package from the service root.
+The analysis endpoint is:
 
-## Next Milestone — Day 7
+POST /api/v1/analyze-upgrade
 
-Implement the deterministic dependency-upgrade risk engine using the structured dependency data produced by the Maven parser.
+The response includes dependency coordinates, current and target versions, comparison status, risk score and category, evaluated factors, warnings, recommendations, and scoreIsProbability: false.
+Risk-scoring behavior
+The engine uses explicit rules and returns the contribution and explanation for evaluated factors. The score is a deterministic heuristic; it is not a trained ML prediction and is not a probability of failure.
+The version comparator is a bounded implementation and is not a complete implementation of Apache Maven's ComparableVersion. Unsupported or ambiguous version formats produce an unknown comparison instead of asserting an unreliable version order.
+Verification
+Automated tests
+The final local pytest run reported:
+- 39 tests collected.
+- 39 passed.
+- 0 failures.
+- 0 errors.
+- 1 Starlette/httpx deprecation warning.
+- Runtime: 0.60 seconds.
+Test files included:
+- tests/test_analysis_api.py — 3 passed.
+- tests/test_maven_parser.py — 17 passed.
+- tests/test_parser_api.py — 4 passed.
+- tests/test_rule_engine.py — 8 passed.
+- tests/test_version_comparator.py — 7 passed.
+Live HTTP checks
+- Major upgrade 1.2.3 → 2.0.0: HTTP 200, comparison upgrade, score 40, category HIGH, and the MAJOR_CHANGE factor was returned.
+- Missing targetVersion: HTTP 422 with a validation error.
+- Unsupported version 1.0.0-custom → 1.1.0: HTTP 200 with comparison unknown and a structured uncertainty factor.
+- Existing health and Maven parser APIs were reported as working after the analysis router was registered.
+- git diff --check completed without reporting whitespace errors.
+Limitations and follow-up
+- Maven parsing remains a partial POM parser, not a full effective-POM resolver; Day 6 limitations still apply.
+- Version comparison supports a bounded set of formats. Maven's full version ordering semantics are not implemented.
+- Risk scores are rule-based heuristics and have not been trained or calibrated against a historical upgrade-outcome dataset.
+- Historical data collection, label definition, ML evaluation, retrieval-augmented evidence, and LLM-generated explanations remain future work.
+- The Starlette/httpx deprecation warning did not fail the tests and is deferred for dependency compatibility cleanup.
+Outcome
+The Python service now has a tested deterministic dependency-upgrade risk-analysis endpoint alongside the existing Maven parser API. Day 7 implementation and local verification are complete. No Git commit or push was made as part of this milestone.
+Next milestone — Day 8
+Research historical dependency-upgrade datasets and define the data strategy for future ML work. Investigate available sources, licensing and usage constraints, label definitions, candidate features, dataset quality, and an evaluation approach. Do not begin model training until the dataset and target outcome are sufficiently defined.
