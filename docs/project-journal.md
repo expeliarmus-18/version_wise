@@ -649,3 +649,38 @@ Outcome
 The Python service now has a tested deterministic dependency-upgrade risk-analysis endpoint alongside the existing Maven parser API. Day 7 implementation and local verification are complete. No Git commit or push was made as part of this milestone.
 Next milestone — Day 8
 Research historical dependency-upgrade datasets and define the data strategy for future ML work. Investigate available sources, licensing and usage constraints, label definitions, candidate features, dataset quality, and an evaluation approach. Do not begin model training until the dataset and target outcome are sufficiently defined.
+
+## Day 8 — ML Dataset and Feasibility Research
+
+**Status: RESEARCH COMPLETED; DOCUMENTATION UPDATE IN PROGRESS**
+
+### Objective
+
+Research historical dependency-upgrade datasets and determine whether VersionWise can reasonably proceed toward ML-based dependency-upgrade risk analysis.
+
+### Completed Research
+
+- Reviewed BUMP as a source of reproducible breaking dependency updates.
+- Identified its usefulness for failure-category research and its limitation as a failure-focused dataset.
+- Established that a general risk model needs representative successful-upgrade evidence as well as failure records.
+- Defined candidate labels, label-evidence considerations, feature candidates, and a normalized dataset schema.
+- Identified risks of label uncertainty, causal overclaiming, and data leakage.
+- Proposed time-aware and project-aware evaluation, including comparison with the Day 7 deterministic baseline.
+- Planned training around the development laptop: Ryzen 7 4800H, 16 GB RAM, RTX 3050 4 GB VRAM, and approximately 200 GB free SSD.
+- Decided against downloading the complete BUMP Docker archive or beginning large-model training.
+
+### Day 8 Decision
+
+No model training is performed on Day 8.
+
+Day 9 training will proceed only if the selected dataset has sufficient quality, provenance, and label evidence for the intended prediction task. Otherwise, data collection and labeling will take priority.
+
+### Documentation
+
+Research details are maintained in:
+
+`docs/ml/dataset-feasibility.md`
+
+### Next Step
+
+Complete and review the Day 8 documentation diff. Do not commit or push until the documentation changes have been inspected and approved.
