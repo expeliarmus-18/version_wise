@@ -327,3 +327,51 @@ The current risk engine is deterministic and rule-based. Its score is a heuristi
 The Maven parser is not a full Maven effective-POM resolver. Parent inheritance, imported BOM resolution, transitive dependencies, profile activation, Maven settings, and environment-specific resolution are outside its current scope.
 
 Machine learning, historical outcome data, RAG-based evidence retrieval, and LLM explanations are planned future capabilities and are not represented as completed features.
+
+
+# VersionWise ML Dataset Preparation
+
+This module provides the initial dataset preparation foundation for
+historical dependency-upgrade outcome analysis.
+
+## Current capabilities
+
+- Normalize and validate labeled upgrade records.
+- Preserve label evidence and source metadata.
+- Reject unsupported labels instead of guessing.
+- Remove duplicate upgrade observations.
+- Split records into train, validation, and test partitions.
+- Keep records sharing a split group in the same partition.
+- Produce prepared CSV files and a JSON summary.
+
+## Input
+
+The input is a CSV file containing the fields required by
+`app.ml.dataset.normalize_record`.
+
+The dataset must contain verified labels and a meaningful `split_group`.
+The group should reflect the intended generalization goal and must be
+chosen before model evaluation.
+
+## Run
+
+From the `ai-service` directory:
+
+```cmd
+.versionwise\Scripts\python.exe -m app.ml.prepare --input data\raw\upgrades.csv --output data\processed
+```
+
+The output directory contains:
+
+- `train.csv`
+- `validation.csv`
+- `test.csv`
+- `summary.json`
+
+## Current ML status
+
+Dataset preparation is implemented, but model training is not yet
+considered feasible until a real dataset has been obtained and assessed.
+
+No model metrics or failure-prediction claims should be reported based
+on synthetic test fixtures.

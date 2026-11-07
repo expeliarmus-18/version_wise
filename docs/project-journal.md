@@ -681,6 +681,67 @@ Research details are maintained in:
 
 `docs/ml/dataset-feasibility.md`
 
-### Next Step
 
-Complete and review the Day 8 documentation diff. Do not commit or push until the documentation changes have been inspected and approved.
+# Day 9 — ML Dataset Preparation Foundation
+
+**Status:** IMPLEMENTATION COMPLETED — REAL DATASET AND MODEL TRAINING PENDING
+
+## Objective
+
+Build the initial dataset preparation foundation for evaluating machine-learning-assisted dependency-upgrade analysis in VersionWise, based on the Day 8 feasibility research.
+
+## Work Completed
+
+### Dataset validation and normalization
+- Added an ML dataset module.
+- Defined supported dependency-upgrade outcome labels.
+- Implemented record normalization and required-field validation.
+- Preserved label evidence and source metadata.
+- Added label confidence validation.
+- Implemented duplicate upgrade record handling.
+- Added dataset summaries and label counts.
+- Added CSV loading.
+
+### Group-aware dataset splitting
+- Implemented train, validation, and test partitions.
+- Added deterministic splitting with a configurable random seed.
+- Ensured records sharing a split group remain in the same partition.
+- Added validation for split ratios and insufficient group counts.
+
+### Dataset preparation workflow
+- Added a dataset preparation CLI.
+- Added output generation for prepared datasets and a JSON summary.
+- Documented the preparation workflow and current ML status.
+
+## Testing
+
+- Focused ML tests: **13 passed**
+- Full Python test suite: **52 passed, 0 failed**
+- One Starlette deprecation warning related to `httpx` was reported; it did not affect test results.
+
+The preparation CLI has not yet been independently verified against a real source dataset.
+
+## ML Feasibility Status
+
+The implementation establishes a foundation for future ML experiments. A suitable real, labeled dataset has not yet been acquired, and no model has been trained.
+
+Remaining work includes:
+- Acquiring a suitable historical dataset.
+- Verifying labels, provenance, and licensing.
+- Assessing dataset size and class distribution.
+- Selecting an evaluation split appropriate to the intended generalization goal.
+- Training and evaluating a baseline model.
+- Comparing model performance against the existing deterministic risk engine.
+
+No model metrics or calibrated failure-probability claims are made.
+
+## Outcome
+
+VersionWise retains its deterministic dependency-upgrade risk engine as the current analysis foundation. ML remains an experimental future capability.
+
+Day 9 is complete from an implementation-foundation perspective. Real-data acquisition and model training remain future work.
+
+## Next
+
+Day 10 — Research and document official evidence sources for dependency-upgrade analysis, including reliability, access, limitations, and integration feasibility.
+.
