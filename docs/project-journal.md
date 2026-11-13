@@ -1,30 +1,30 @@
-# \# VersionWise Project Journal
+﻿# \# VersionWise Project Journal
 
-# 
+#
 
 # \## 1. Project Snapshot
 
-# 
+#
 
 # \- \*\*Project:\*\* VersionWise
 
 # \- \*\*Date:\*\* 2026-10-12
 
-# \- \*\*Current phase:\*\* Day 1 — Architecture, Prerequisites and Repository Foundation
+# \- \*\*Current phase:\*\* Day 1 â€” Architecture, Prerequisites and Repository Foundation
 
 # \- \*\*Repository path:\*\* `C:\\Users\\tanma\\Learning\\PROJECT\\VersionWise`
 
 # \- \*\*Git branch:\*\* `master`
 
-# \- \*\*Latest verified commit:\*\* `f5455ab` — `chore: establish VersionWise project foundation`
+# \- \*\*Latest verified commit:\*\* `f5455ab` â€” `chore: establish VersionWise project foundation`
 
 # \- \*\*Current implementation status:\*\* Project foundation established; application development has not started.
 
-# 
+#
 
 # \## 2. Approved Technology Decisions
 
-# 
+#
 
 # \### Frontend
 
@@ -36,7 +36,7 @@
 
 # \- CSS
 
-# 
+#
 
 # \### Main Backend
 
@@ -56,7 +56,7 @@
 
 # \- Maven
 
-# 
+#
 
 # \### AI Service
 
@@ -72,7 +72,7 @@
 
 # \- Scikit-learn
 
-# 
+#
 
 # \### Data and Retrieval
 
@@ -82,7 +82,7 @@
 
 # \- The Python AI service does not own the application's PostgreSQL database.
 
-# 
+#
 
 # \### GenAI
 
@@ -90,7 +90,7 @@
 
 # \- LangChain and embeddings may be used where they provide practical value.
 
-# 
+#
 
 # \### Development Environment
 
@@ -102,7 +102,7 @@
 
 # \- Repository name: `VersionWise`
 
-# 
+#
 
 # \### Delivery Strategy
 
@@ -114,15 +114,15 @@
 
 # \- Defer DevOps work until the MVP is stable, starting on Day 16 or later.
 
-# 
+#
 
 # \## 3. Verified Environment Inventory
 
-# 
+#
 
 # The following versions and environment details were observed during Day 1.
 
-# 
+#
 
 # | Component | Verified result |
 
@@ -154,11 +154,11 @@
 
 # | IDEs | IntelliJ IDEA and VS Code are available, as confirmed by the developer |
 
-# 
+#
 
 # \### PostgreSQL Verification
 
-# 
+#
 
 # \- The PostgreSQL server executable exists at `C:\\Program Files\\PostgreSQL\\18\\bin\\postgres.exe`.
 
@@ -170,51 +170,51 @@
 
 # \- This verifies local database connectivity using the `postgres` account. Application-specific database creation, credentials, and Spring Boot connectivity have not yet been configured or verified.
 
-# 
+#
 
 # \## 4. Repository Foundation
 
-# 
+#
 
 # \### Repository Structure
 
-# 
+#
 
 # The following initial structure was created:
 
-# 
+#
 
 # ```text
 
 # VersionWise/
 
-# ├── .gitignore
+# â”œâ”€â”€ .gitignore
 
-# ├── README.md
+# â”œâ”€â”€ README.md
 
-# ├── frontend/
+# â”œâ”€â”€ frontend/
 
-# ├── backend/
+# â”œâ”€â”€ backend/
 
-# ├── ai-service/
+# â”œâ”€â”€ ai-service/
 
-# ├── samples/
+# â”œâ”€â”€ samples/
 
-# └── docs/
+# â””â”€â”€ docs/
 
-# &#x20;   └── project-journal.md
+# &#x20;   â””â”€â”€ project-journal.md
 
 # ```
 
-# 
+#
 
 # The `frontend`, `backend`, `ai-service`, and `samples` directories are currently placeholders for future implementation.
 
-# 
+#
 
 # \### Initial Files
 
-# 
+#
 
 # \- `.gitignore`: excludes secrets, local environment files, Java build output, Node.js dependencies, Python caches and virtual environments, IDE files, local databases, vector-store data, and logs.
 
@@ -222,11 +222,11 @@
 
 # \- `docs/project-journal.md`: records project decisions, environment verification, architecture safeguards, and implementation progress.
 
-# 
+#
 
 # \### Git Status
 
-# 
+#
 
 # \- Repository initialization: completed.
 
@@ -240,15 +240,15 @@
 
 # \- The journal's latest documentation update and any subsequent commit must be recorded after their completion.
 
-# 
+#
 
 # \## 5. Architecture Safeguards
 
-# 
+#
 
 # The implementation must follow these principles:
 
-# 
+#
 
 # 1\. \*\*Explainable rule-engine results:\*\* Rule-engine scores are heuristics, not calibrated probabilities of upgrade failure.
 
@@ -266,11 +266,11 @@
 
 # 8\. \*\*Non-destructive changes:\*\* Avoid overwriting existing work, deleting project data, or changing system configuration without a clear reason.
 
-# 
+#
 
 # \## 6. Pending Verification and Future Work
 
-# 
+#
 
 # \### Day 1 Documentation Closeout
 
@@ -282,9 +282,9 @@
 
 # \- \[ ] Record the final Day 1 handoff in the Master Chat.
 
-# 
+#
 
-# \### Day 2 — Backend Foundation
+# \### Day 2 â€” Backend Foundation
 
 # \- \[ ] Review the existing environment and repository without repeating unnecessary checks.
 
@@ -296,7 +296,7 @@
 
 # \- \[ ] Record commands, results, decisions, and blockers.
 
-# 
+#
 
 # \### Later Development Phases
 
@@ -310,11 +310,11 @@
 
 # \- \[ ] Introduce DevOps only after MVP stability, starting Day 16 or later.
 
-# 
+#
 
 # \## 7. Implementation Status
 
-# 
+#
 
 # \*\*Completed during Day 1\*\*
 
@@ -332,7 +332,7 @@
 
 # \- Initialized Git and created the initial foundation commit.
 
-# 
+#
 
 # \*\*Not yet implemented\*\*
 
@@ -352,17 +352,17 @@
 
 # \- Automated tests and end-to-end integration.
 
-# 
+#
 
 # \*\*Current conclusion:\*\* The Day 1 environment inspection and repository foundation are complete. PostgreSQL local connectivity is verified. The journal closeout commit remains pending until this finalized version is saved and committed. Application development should begin with the Day 2 backend foundation, without assuming application-level database integration already exists.
 
 
 
 
-## Day 2 — Spring Boot Foundation and PostgreSQL Connectivity
+## Day 2 â€” Spring Boot Foundation and PostgreSQL Connectivity
 
 **Date:** 2026-10-16
-**Status:** IN PROGRESS — final documentation and Git review pending
+**Status:** IN PROGRESS â€” final documentation and Git review pending
 **Repository:** `C:\Users\tanma\Learning\PROJECT\VersionWise`
 
 ### Implemented
@@ -401,10 +401,10 @@
 After closeout, begin Day 3 according to the Master Chat plan. Preserve the existing architecture and avoid adding authentication or unrelated features before the next planned milestone.
 
 
-## Day 3 — Project Entities, Persistence and CRUD API
+## Day 3 â€” Project Entities, Persistence and CRUD API
 
-**Date:** 2026-10-23  
-**Status:** Completed — implementation, verification and Git commit completed  
+**Date:** 2026-10-23
+**Status:** Completed â€” implementation, verification and Git commit completed
 **Commit:** `4fdac5f feat(backend): implement project CRUD API`
 
 ### Implemented
@@ -420,12 +420,12 @@ After closeout, begin Day 3 according to the Master Chat plan. Preserve the exis
 
 ### API endpoints
 
-- `GET /api/health` — health check.
-- `POST /api/projects` — create a project.
-- `GET /api/projects` — list projects for the development user.
-- `GET /api/projects/{id}` — retrieve a project.
-- `PUT /api/projects/{id}` — update a project.
-- `DELETE /api/projects/{id}` — delete a project.
+- `GET /api/health` â€” health check.
+- `POST /api/projects` â€” create a project.
+- `GET /api/projects` â€” list projects for the development user.
+- `GET /api/projects/{id}` â€” retrieve a project.
+- `PUT /api/projects/{id}` â€” update a project.
+- `DELETE /api/projects/{id}` â€” delete a project.
 
 ### Verification
 
@@ -453,7 +453,7 @@ After closeout, begin Day 3 according to the Master Chat plan. Preserve the exis
 
 
 
-### Day 3 Completion Addendum — Authentication and Authorization
+### Day 3 Completion Addendum â€” Authentication and Authorization
 
 **Status:** Implementation and verification completed
 **Date:** 2026-10-26
@@ -490,7 +490,7 @@ Continue with the next milestone in the VersionWise Master Chat project plan.
 
 
 
-## Day 4 — Frontend and Authentication Integration
+## Day 4 â€” Frontend and Authentication Integration
 
 **Status:** Core implementation and manual integration checks completed.
 
@@ -527,7 +527,7 @@ The backend uses stateless JWT authentication. Passwords are handled by the back
 - The frontend currently targets the local development backend by default. Production deployment configuration and production-grade token-storage/security review remain future work.
 - Temporary frontend source-bundle files should not be committed; the maintained application source belongs in `frontend/`.
 
-## Day 5 — Authenticated Project Dashboard and CRUD
+## Day 5 â€” Authenticated Project Dashboard and CRUD
 
 ### Objective
 Connect the React frontend to the existing authenticated project API and replace the temporary API-check dashboard with functional project management.
@@ -558,7 +558,7 @@ Connect the React frontend to the existing authenticated project API and replace
 ### Outcome
 The authenticated frontend supports project CRUD through the existing backend API. Day 5 is ready for documentation review and version control.
 
-# Day 6 — Python FastAPI Foundation and Maven Dependency Parsing
+# Day 6 â€” Python FastAPI Foundation and Maven Dependency Parsing
 
 ## Objective
 
@@ -598,7 +598,7 @@ The parser is not a complete Maven effective-POM resolver.
 
 It does not resolve parent inheritance, imported BOMs, transitive dependencies, activated profiles, Maven settings or environment-specific properties.
 The service is intended for controlled internal development use and is not configured for direct public exposure.
-Day 7 — Deterministic Dependency-Upgrade Risk Engine
+Day 7 â€” Deterministic Dependency-Upgrade Risk Engine
 Status: Implementation and verification completed.
 Objective
 Build a deterministic, explainable baseline for evaluating Maven dependency upgrades. The engine compares a current dependency version with a proposed target version, applies explicit risk rules, and returns a structured analysis through the Python FastAPI service.
@@ -628,15 +628,15 @@ The final local pytest run reported:
 - 1 Starlette/httpx deprecation warning.
 - Runtime: 0.60 seconds.
 Test files included:
-- tests/test_analysis_api.py — 3 passed.
-- tests/test_maven_parser.py — 17 passed.
-- tests/test_parser_api.py — 4 passed.
-- tests/test_rule_engine.py — 8 passed.
-- tests/test_version_comparator.py — 7 passed.
+- tests/test_analysis_api.py â€” 3 passed.
+- tests/test_maven_parser.py â€” 17 passed.
+- tests/test_parser_api.py â€” 4 passed.
+- tests/test_rule_engine.py â€” 8 passed.
+- tests/test_version_comparator.py â€” 7 passed.
 Live HTTP checks
-- Major upgrade 1.2.3 → 2.0.0: HTTP 200, comparison upgrade, score 40, category HIGH, and the MAJOR_CHANGE factor was returned.
+- Major upgrade 1.2.3 â†’ 2.0.0: HTTP 200, comparison upgrade, score 40, category HIGH, and the MAJOR_CHANGE factor was returned.
 - Missing targetVersion: HTTP 422 with a validation error.
-- Unsupported version 1.0.0-custom → 1.1.0: HTTP 200 with comparison unknown and a structured uncertainty factor.
+- Unsupported version 1.0.0-custom â†’ 1.1.0: HTTP 200 with comparison unknown and a structured uncertainty factor.
 - Existing health and Maven parser APIs were reported as working after the analysis router was registered.
 - git diff --check completed without reporting whitespace errors.
 Limitations and follow-up
@@ -647,10 +647,10 @@ Limitations and follow-up
 - The Starlette/httpx deprecation warning did not fail the tests and is deferred for dependency compatibility cleanup.
 Outcome
 The Python service now has a tested deterministic dependency-upgrade risk-analysis endpoint alongside the existing Maven parser API. Day 7 implementation and local verification are complete. No Git commit or push was made as part of this milestone.
-Next milestone — Day 8
+Next milestone â€” Day 8
 Research historical dependency-upgrade datasets and define the data strategy for future ML work. Investigate available sources, licensing and usage constraints, label definitions, candidate features, dataset quality, and an evaluation approach. Do not begin model training until the dataset and target outcome are sufficiently defined.
 
-## Day 8 — ML Dataset and Feasibility Research
+## Day 8 â€” ML Dataset and Feasibility Research
 
 **Status: RESEARCH COMPLETED; DOCUMENTATION UPDATE IN PROGRESS**
 
@@ -682,9 +682,9 @@ Research details are maintained in:
 `docs/ml/dataset-feasibility.md`
 
 
-# Day 9 — ML Dataset Preparation Foundation
+# Day 9 â€” ML Dataset Preparation Foundation
 
-**Status:** IMPLEMENTATION COMPLETED — REAL DATASET AND MODEL TRAINING PENDING
+**Status:** IMPLEMENTATION COMPLETED â€” REAL DATASET AND MODEL TRAINING PENDING
 
 ## Objective
 
@@ -743,5 +743,101 @@ Day 9 is complete from an implementation-foundation perspective. Real-data acqui
 
 ## Next
 
-Day 10 — Research and document official evidence sources for dependency-upgrade analysis, including reliability, access, limitations, and integration feasibility.
+Day 10 â€” Research and document official evidence sources for dependency-upgrade analysis, including reliability, access, limitations, and integration feasibility.
 .
+
+
+## Day 10 â€” AI Service Audit, ML Removal and RAG/LLM Readiness
+
+**Date:** 2026-11-13
+**Status:** Implementation prepared; final verification in the developer's Windows environment and Git review remain pending.
+**Git branch at start of Day 10 work:** `master`
+**Working tree at start of Day 10 work:** clean (`git status --short` returned no entries).
+
+### Architecture decision
+
+The active VersionWise implementation will not use machine learning. Days 8â€“9 ML feasibility research and dataset-preparation work are retained as historical project records, but the ML implementation is removed from the active Python service. No model training, prediction endpoint or ML runtime dependency is part of the product plan.
+
+The target analysis flow is:
+
+`Maven POM â†’ structured dependency declarations â†’ deterministic analysis â†’ RAG evidence retrieval â†’ LLM assessment â†’ structured upgrade report`
+
+The Python service remains independent from Spring Boot during this milestone. No cross-service calls, authentication integration, database integration or frontend changes are included.
+
+### Files and components reviewed
+
+The supplied `ai-service.zip` was inspected, including:
+
+- FastAPI application entry point and health, parser and analysis routes.
+- Maven POM parser, version comparator and deterministic rule engine.
+- Pydantic dependency and risk request/response models.
+- Python requirements and pytest configuration.
+- Parser, API, comparator and rule-engine tests.
+- ML dataset normalization, group splitting, preparation CLI and ML-only tests.
+- Stale Day 7 patch instructions and generated Python bytecode included in the archive.
+
+The supplied root README and project journal were also reviewed. The repository owner separately confirmed that the current branch is `master`, the working tree is clean, and the root `.gitignore` exists. The `.gitignore` contents were not supplied for inspection and were not changed.
+
+### Cleanup prepared
+
+Removed from the cleaned AI-service package:
+
+- `app/ml/dataset.py`
+- `app/ml/split.py`
+- `app/ml/prepare.py`
+- `app/ml/__init__.py`
+- `tests/ml/test_dataset.py`
+- `tests/ml/test_split.py`
+- Generated `__pycache__` directories and `.pyc`/`.pyo` files found in the supplied ZIP.
+- Stale `PATCH-INSTRUCTIONS.txt`.
+
+Added `defusedxml` to `requirements.txt` because the Maven parser imports it for secure XML parsing but the supplied dependency file did not declare it.
+
+Retained the Maven parser, version comparator, deterministic rule engine, FastAPI routes, existing Pydantic models, pytest configuration and all non-ML tests.
+
+### RAG/LLM boundary preparation
+
+Added reserved package boundaries under `app/` for `core`, `parser`, `rag` and `llm`. These are architectural placeholders only; no RAG ingestion, vector database, embeddings, retrieval, LLM client or prompt execution is implemented.
+
+The existing parser remains at `app/analysis/maven_parser.py` to avoid a disruptive move of working code.
+
+Added `app/models/assessment.py` as a future report data contract. It defines:
+
+- `RECOMMENDED`, `NOT_RECOMMENDED` and `INSUFFICIENT_EVIDENCE` assessment statuses.
+- Structured compatibility, breaking-change, migration and security finding groups.
+- Evidence source title, source URI, excerpt and optional retrieval timestamp.
+- Limitations/uncertainty fields.
+
+This model is not connected to an API route or LLM. It does not establish that evidence has been retrieved or validated.
+
+### Documentation prepared
+
+- Replaced the AI-service README with setup instructions, endpoint documentation, current limitations and future boundaries.
+- Prepared an updated root README describing the current stack, implemented capabilities, removed ML direction, parser/risk limitations and Days 11â€“15 roadmap.
+- Preserved the historical Days 8â€“9 journal entries and appended this Day 10 record.
+
+### Verification performed during preparation
+
+The supplied archive initially had 52 tests, including 13 ML-specific tests. After removing ML tests and adding three tests for the future assessment contract, the consolidated test run reported:
+
+- **42 passed**
+- **0 failed**
+- **0 errors**
+
+The tests were run in the available inspection Python environment, not in the developer's Windows `.versionwise` environment. This is not yet the final Windows verification. The assessment-contract test initially exposed that Pydantic `min_length` accepts whitespace-only strings; a non-whitespace summary validator was added and the final test run passed.
+
+The test run emitted no pytest warning in its final output. No claim is made here that a clean Windows dependency installation, Uvicorn process startup or manual HTTP checks have been performed.
+
+### Remaining verification and closeout
+
+- [ ] Apply/review the prepared AI-service changes in the actual repository.
+- [ ] Install requirements in the developer's Windows `.versionwise` environment and verify `defusedxml` is installed from the declared requirements.
+- [ ] Run `python -m compileall app`.
+- [ ] Run the complete `pytest` suite from `ai-service`.
+- [ ] Start Uvicorn and manually verify `/health`, `/api/v1/parse-pom` and `/api/v1/analyze-upgrade`.
+- [ ] Review the complete Git diff, including root README and this journal.
+- [ ] Confirm no ML imports or active ML references remain in the AI service.
+- [ ] Confirm no Spring Boot integration was introduced.
+- [ ] Commit/push only after explicit developer approval.
+
+**Day 10 outcome:** The cleaned implementation and documentation are prepared for review. The available test run passes, but Day 10 must not be marked fully closed until the developer performs the Windows-environment verification and reviews the repository diff.

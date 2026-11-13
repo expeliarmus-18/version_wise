@@ -1,377 +1,224 @@
 # VersionWise
 
-VersionWise is an AI-powered Java/Maven dependency-upgrade intelligence application designed to help developers understand upgrade risks, compatibility issues, and potential breaking changes before upgrading dependencies.
+VersionWise is an AI-assisted Java/Maven dependency-upgrade analysis platform. It helps developers inspect declared dependencies, understand deterministic upgrade-risk signals, and—after the planned RAG and LLM milestones—review evidence-grounded upgrade recommendations.
 
-## Planned Architecture
+## Current architecture
 
-- **Frontend:** React, JavaScript, Vite, and CSS.
-- **Backend:** Java 21, Spring Boot, Spring Security, JWT, Spring Data JPA, and Maven.
-- **AI service:** Python, FastAPI, Pydantic, Pandas, NumPy, and Scikit-learn.
-- **Database:** PostgreSQL for application data.
-- **Retrieval:** Persistent local ChromaDB for document embeddings.
-- **GenAI:** Hosted LLM API, with LangChain and embeddings where useful.
+- **Frontend:** React, JavaScript, Vite, CSS.
+- **Backend:** Java 21, Spring Boot 3.5.16, Spring Security, JWT, Spring Data JPA.
+- **Application database:** PostgreSQL, owned by the Spring Boot backend.
+- **AI service:** Python 3.10+, FastAPI and Pydantic.
+- **Current dependency analysis:** Maven POM declaration parsing and a deterministic, rule-based upgrade-risk baseline.
+- **Planned evidence retrieval:** official technical documentation indexed for retrieval; ChromaDB is a candidate local vector store.
+- **Planned generation:** a hosted LLM that assesses structured dependency information and retrieved evidence.
 
-## Planned Analysis
+The Python AI service runs independently. It is not currently connected to Spring Boot.
 
-Users will analyze Maven dependency upgrades using deterministic rules, optional historical ML predictions, sourced documentation evidence, and explainable reports.
+## Current implementation status
 
-## Development Phases
+### Implemented
 
-- **Days 1–2:** Development environment, repository setup, backend foundation, and PostgreSQL connectivity.
-- **Day 3:** Project CRUD REST APIs, JWT authentication, and project authorization.
-- **Day 4:** React frontend, registration and login UI, authenticated API integration, and session handling.
-- Completed
+- JWT-based user registration, login and stateless backend authentication.
+- User-scoped project CRUD through the Spring Boot API.
+- React authentication and authenticated project dashboard.
+- Independent FastAPI service with health, POM parsing and upgrade-analysis endpoints.
+- Maven POM declaration parsing, including direct dependencies, dependency-management declarations, common scopes, optional flags and locally declared property substitution.
+- Conservative version comparison for a bounded set of common release and qualifier formats.
+- Explainable deterministic risk scoring.
 
-Backend foundation: Java 21, Spring Boot, Maven, and PostgreSQL.
+### Not implemented yet
 
-Authentication and authorization: registration, login, BCrypt password hashing, JWT-based stateless authentication, and user-scoped project access.
+- Full Maven effective-POM resolution.
+- Parent POM inheritance, imported BOM resolution, transitive dependency resolution, profile activation, Maven settings or environment-specific property resolution.
+- RAG document ingestion, embedding generation, vector storage or retrieval.
+- LLM calls or generated upgrade assessments.
+- Spring Boot ↔ FastAPI integration and end-to-end dependency-analysis workflow.
+- Any ML model or active ML dataset-preparation pipeline.
 
-Frontend authentication: React registration and login flow, authenticated session handling, and logout.
+Machine learning was evaluated during Days 8–9 and rejected for the active implementation because a sufficiently representative, reliable labeled dataset was not available. The historical feasibility research is retained under `docs/ml/`; it is not an active product dependency.
 
-Project management: authenticated project listing, creation, detail viewing, editing, and deletion.
-
-Dashboard UX: loading, empty, success, and error states; form validation; delete confirmation; responsive project cards.
-- **DevOps:** Deferred until the MVP is stable, starting Day 16 or later.
-
-Current MVP Progress
-
-Completed
-
-Backend foundation: Java 21, Spring Boot, Maven, and PostgreSQL.
-
-Authentication and authorization: registration, login, BCrypt password hashing, JWT-based stateless authentication, and user-scoped project access.
-
-Frontend authentication: React registration and login flow, authenticated session handling, and logout.
-
-Project management: authenticated project listing, creation, detail viewing, editing, and deletion.
-
-Dashboard UX: loading, empty, success, and error states; form validation; delete confirmation; responsive project cards.
-### Authentication
-
-- User registration through `POST /api/auth/register`.
-- Login through `POST /api/auth/login`.
-- BCrypt password hashing handled by the backend.
-- Signed, expiring JWT access tokens.
-- Stateless Spring Security authentication.
-- The frontend sends JWT access tokens in the `Authorization: Bearer <token>` header for protected requests.
-- Frontend session handling and logout behavior implemented.
-
-### Authorization
-
-- Project endpoints require authentication.
-- Project access is scoped to the authenticated user's identity.
-- Access to another user's project returns `404 Not Found`.
-- Project creation, listing, retrieval, updating, and deletion use the authenticated user's authorization context.
-
-### API Endpoints
-
-**Public endpoints:**
-
-- `GET /api/health`
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-
-**Protected project endpoints:**
-
-- `POST /api/projects` — create a project.
-- `GET /api/projects` — list the authenticated user's projects.
-- `GET /api/projects/{id}` — retrieve a project.
-- `PUT /api/projects/{id}` — update a project.
-- `DELETE /api/projects/{id}` — delete a project.
-
-All project endpoints require a valid JWT Bearer token.
-
-### Configuration and Secrets
-
-- PostgreSQL credentials are supplied through environment variables.
-- The JWT signing secret is supplied through environment-based configuration.
-- Frontend API configuration is provided through `frontend/.env.example`.
-- The frontend defaults to the local backend at `http://localhost:8080`.
-- Backend CORS currently permits the local Vite development origin `http://localhost:5173`.
-- Never commit database credentials, JWT secrets, API keys, or other sensitive values.
-
-### Verification
-
-- Backend verification previously completed successfully with `mvnw.cmd clean verify`: 8 tests, 0 failures, 0 errors, and 0 skipped.
-- Manual Postman checks for the backend were reported as successful.
-- Frontend production build completed successfully.
-- Frontend lint completed with zero warnings and errors.
-- Backend compilation completed successfully using `mvnw.cmd -DskipTests compile`.
-- Manual frontend integration checks covered multiple users, invalid login credentials, authenticated project API requests, and expected user-specific project data.
-
-A backend compilation check with tests skipped does not replace a full test run after subsequent changes. Run the planned final verification before considering the current milestone fully closed.
-
-## Repository Structure
+## Repository structure
 
 ```text
 VersionWise/
-├── backend/          # Spring Boot REST API and security
-├── frontend/         # React + Vite web application
+├── backend/                 # Spring Boot API, security and persistence
+├── frontend/                # React + Vite application
+├── ai-service/              # Independent Python analysis service
+│   ├── app/
+│   │   ├── analysis/        # Maven parser, comparator and rule engine
+│   │   ├── api/routes/      # FastAPI endpoints
+│   │   ├── core/            # Reserved for shared configuration
+│   │   ├── llm/             # Reserved for Day 13 implementation
+│   │   ├── models/          # API and future assessment contracts
+│   │   ├── parser/          # Reserved for future parser separation if needed
+│   │   └── rag/             # Reserved for Days 11–12 implementation
+│   ├── tests/
+│   ├── requirements.txt
+│   └── README.md
 ├── docs/
+│   ├── ml/                  # Historical ML feasibility research
 │   └── project-journal.md
 ├── README.md
 └── .gitignore
 ```
 
-The Python AI service, retrieval components, and dependency-analysis pipeline are planned future components and may not yet exist in the repository.
+Reserved `core`, `parser`, `rag` and `llm` packages are architectural boundaries only. They do not imply that RAG or LLM functionality has been implemented. The working Maven parser remains in `app/analysis/maven_parser.py` to avoid unnecessary churn.
 
-## Backend Setup
+## Backend setup
 
 ### Requirements
 
 - Java 21
-- Maven Wrapper included in the repository
+- Maven Wrapper (included)
 - PostgreSQL
 
-### Configuration
-
-Configure the following environment variables in the backend run configuration:
+Configure the backend's environment variables before startup:
 
 - `DB_URL`
 - `DB_USERNAME`
 - `DB_PASSWORD`
-- The JWT signing secret required by the backend configuration, `app.security.jwt-secret`
+- `JWT_SECRET`
 
-Use a sufficiently strong JWT signing secret that satisfies the backend's minimum-length validation. Keep all secrets outside version control.
-
-### Run the Backend
-
-From the repository root, run:
+Run from the repository root:
 
 ```bat
 cd backend
 mvnw.cmd spring-boot:run
 ```
 
-Alternatively, open the repository in IntelliJ IDEA and run:
+The backend health endpoint is `http://localhost:8080/api/health`.
 
-`com.versionwise.backend.BackendApplication`
+### Backend API
 
-Ensure PostgreSQL is running and the required environment variables are configured first.
+Public endpoints:
 
-### Health Check
+- `GET /api/health`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
 
-`http://localhost:8080/api/health`
+Protected project endpoints (JWT Bearer token required):
 
-## Frontend Setup
+- `POST /api/projects`
+- `GET /api/projects`
+- `GET /api/projects/{id}`
+- `PUT /api/projects/{id}`
+- `DELETE /api/projects/{id}`
 
-### Requirements
+Database credentials and JWT signing secrets must remain outside version control.
 
-- Node.js
-- npm
+## Frontend setup
 
-### Install Dependencies
-
-From the repository root:
+Requirements: Node.js and npm.
 
 ```bat
 cd frontend
 npm install
-```
-
-### Configure the API URL
-
-The frontend includes `.env.example` with the development API URL:
-
-```dotenv
-VITE_API_BASE_URL=http://localhost:8080
-```
-
-For the default local configuration, copy the example file:
-
-```bat
 copy .env.example .env
-```
-
-Vite environment variables are exposed to client-side code. Never place passwords, signing secrets, or private API keys in frontend environment variables.
-
-### Run the Frontend
-
-```bat
 npm run dev
 ```
 
-Open `http://localhost:5173/` in your browser.
-
-### Frontend Checks
-
-Run these commands from the `frontend` directory:
+The default local frontend origin is `http://localhost:5173`; the backend's development CORS configuration currently allows that origin. Frontend checks:
 
 ```bat
 npm run lint
 npm run build
 ```
 
-The backend and PostgreSQL must be running for full end-to-end API functionality.
+Never put private API keys, database credentials or signing secrets in Vite environment variables.
 
-## Backend API — Projects
+## Python AI service setup
 
-Base path: `/api/projects`
+Requirements: Python 3.10 or later.
 
-| Method | Endpoint | Purpose | Success status |
-|---|---|---|---|
-| POST | `/api/projects` | Create a project | `201 Created` |
-| GET | `/api/projects` | List the authenticated user's projects | `200 OK` |
-| GET | `/api/projects/{id}` | Retrieve a project | `200 OK` |
-| PUT | `/api/projects/{id}` | Update a project | `200 OK` |
-| DELETE | `/api/projects/{id}` | Delete a project | `204 No Content` |
+From the repository root:
 
-All endpoints require a valid JWT Bearer token.
-
-### Create or Update a Project
-
-Example JSON request:
-
-```json
-{
-  "name": "My first project",
-  "description": "A sample project for VersionWise"
-}
-```
-
-Validation rules:
-
-- `name` is required, must not be blank, and must contain at most 100 characters.
-- `description` is optional and may contain at most 1000 characters.
-- Project IDs are UUIDs.
-- Missing projects return `404 Not Found`.
-- Invalid request bodies should return `400 Bad Request`.
-
-### Authentication API
-
-#### Register
-
-`POST /api/auth/register`
-
-Example request:
-
-```json
-{
-  "email": "alice@example.com",
-  "password": "a-long-development-password"
-}
-```
-
-The password must satisfy the backend's configured validation rules. Registration returns the created user's public information; it does not return the user's password.
-
-#### Login
-
-`POST /api/auth/login`
-
-Example request:
-
-```json
-{
-  "email": "alice@example.com",
-  "password": "a-long-development-password"
-}
-```
-
-Successful login returns an access token, token type, expiration information, and public user information. Use the returned token to access protected endpoints:
-
-```http
-Authorization: Bearer <access-token>
-```
-
-Invalid credentials are rejected by the backend.
-
-## Security Notes and Limitations
-
-- The frontend is currently configured for local development.
-- The development CORS configuration allows `http://localhost:5173`; production deployment requires an explicitly configured frontend origin.
-- Browser-side token storage has security trade-offs. Review token storage, XSS protections, HTTPS, and session expiration behavior before production deployment.
-- JWT signing secrets and database credentials must be managed securely outside source control.
-- The Python AI service, retrieval infrastructure, hosted LLM integration, and complete dependency-analysis pipeline remain planned work until implemented and verified.
-Current Architecture
-
-Frontend: React, JavaScript, Vite.
-
-Backend: Java, Spring Boot, Spring Security, JWT, Spring Data JPA.
-
-Database: PostgreSQL.
-
-API authentication: protected requests use the JWT Bearer token.
-
-Roadmap
-
-The next milestone is the Python FastAPI foundation and Maven dependency parsing. Deterministic dependency-upgrade risk analysis, historical failure-category ML, documentation retrieval, and LLM-generated reports remain future milestones.
-
-The MVP is being developed incrementally. Features listed as roadmap items should not be considered implemented until their milestones are completed and verified.
-
-Dependency Analysis (Python FastAPI)
-VersionWise includes an independent Python FastAPI analysis service under ai-service/.
-Current capabilities
-- Parse Maven pom.xml dependency declarations into structured Pydantic models.
-- Compare a dependency's current version with a proposed target version using a bounded version comparator.
-- Calculate an explainable deterministic upgrade-risk score using explicit rules.
-- Return risk factors, score/category, warnings, and recommendations through the analysis API.
-API endpoints
-Method	Endpoint	Purpose
-GET	/health	Check Python service health
-POST	/api/v1/parse-pom	Parse Maven POM dependency declarations
-POST	/api/v1/analyze-upgrade	Analyze a proposed dependency upgrade
-
-
-Interactive API documentation is available at /docs while the service is running locally.
-Run the analysis service
-From the repository's ai-service directory, activate the existing virtual environment and start Uvicorn:
+```bat
+cd ai-service
+py -3.10 -m venv .versionwise
 .versionwise\Scripts\activate
-python -m uvicorn app.main:app --reload
-The local service is available at http://127.0.0.1:8000; Swagger UI is at http://127.0.0.1:8000/docs.
-
-Run the Python tests from ai-service:
-pytest
-Risk-score interpretation and current limitations
-The current risk engine is deterministic and rule-based. Its score is a heuristic, not a probability of upgrade failure and not yet an ML prediction. The comparator supports a bounded set of version formats; ambiguous or unsupported formats return unknown.
-
-The Maven parser is not a full Maven effective-POM resolver. Parent inheritance, imported BOM resolution, transitive dependencies, profile activation, Maven settings, and environment-specific resolution are outside its current scope.
-
-Machine learning, historical outcome data, RAG-based evidence retrieval, and LLM explanations are planned future capabilities and are not represented as completed features.
-
-
-# VersionWise ML Dataset Preparation
-
-This module provides the initial dataset preparation foundation for
-historical dependency-upgrade outcome analysis.
-
-## Current capabilities
-
-- Normalize and validate labeled upgrade records.
-- Preserve label evidence and source metadata.
-- Reject unsupported labels instead of guessing.
-- Remove duplicate upgrade observations.
-- Split records into train, validation, and test partitions.
-- Keep records sharing a split group in the same partition.
-- Produce prepared CSV files and a JSON summary.
-
-## Input
-
-The input is a CSV file containing the fields required by
-`app.ml.dataset.normalize_record`.
-
-The dataset must contain verified labels and a meaningful `split_group`.
-The group should reflect the intended generalization goal and must be
-chosen before model evaluation.
-
-## Run
-
-From the `ai-service` directory:
-
-```cmd
-.versionwise\Scripts\python.exe -m app.ml.prepare --input data\raw\upgrades.csv --output data\processed
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
-The output directory contains:
+Start the independent service:
 
-- `train.csv`
-- `validation.csv`
-- `test.csv`
-- `summary.json`
+```bat
+python -m uvicorn app.main:app --reload
+```
 
-## Current ML status
+Local base URL: `http://127.0.0.1:8000`
 
-Dataset preparation is implemented, but model training is not yet
-considered feasible until a real dataset has been obtained and assessed.
+Interactive API documentation: `http://127.0.0.1:8000/docs`
 
-No model metrics or failure-prediction claims should be reported based
-on synthetic test fixtures.
+### AI-service endpoints
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/health` | Service health |
+| POST | `/api/v1/parse-pom` | Parse Maven POM declarations |
+| POST | `/api/v1/analyze-upgrade` | Calculate deterministic upgrade-risk signals |
+
+Run the service tests from `ai-service/`:
+
+```bat
+pytest
+```
+
+### Parser behavior and limitations
+
+The parser handles Maven XML namespaces and extracts project/parent coordinates, direct dependencies and dependency-management declarations separately. It captures dependency scope, type, classifier and optional status. It resolves locally declared properties, including nested references, and preserves unresolved expressions with warnings. Unsafe XML is rejected.
+
+It is a POM declaration parser, not Maven's effective-POM engine. It does not resolve parent inheritance, imported BOMs, transitive dependencies, active profiles, Maven settings, external properties or environment-specific Maven model behavior. A dependency without a local version may receive its version from Maven dependency management or inheritance, but this service does not compute that effective version.
+
+### Deterministic analysis behavior and limitations
+
+The upgrade analyzer uses explicit rules and returns a score, category, evaluated factors, warnings and recommendations. The score is a heuristic signal, not a trained-model prediction, calibrated probability or guarantee of compatibility.
+
+The version comparator intentionally supports a bounded set of common numeric versions and qualifiers. Unsupported or ambiguous formats return `unknown`; it is not a complete implementation of Apache Maven's `ComparableVersion`.
+
+The future LLM must consider parser uncertainty and deterministic findings alongside retrieved evidence. It must be able to return `INSUFFICIENT_EVIDENCE` rather than infer compatibility from missing information.
+
+## Planned RAG and LLM flow
+
+```text
+Maven POM
+   |
+   v
+POM declaration parser
+   |
+   v
+Structured dependency data
+   |
+   v
+Deterministic upgrade analysis
+   |
+   +-------------------------------+
+   |                               |
+   v                               v
+Structured analysis          RAG retrieval
+signals                       (Days 11–12)
+   |                               |
+   +---------------+---------------+
+                   |
+                   v
+             LLM assessment
+                (Day 13)
+                   |
+                   v
+       Structured, evidence-grounded report
+```
+
+The future report contract is defined in `app/models/assessment.py`. It includes `RECOMMENDED`, `NOT_RECOMMENDED` and `INSUFFICIENT_EVIDENCE` statuses, structured finding groups, evidence references and limitations. This is a data contract only; no retrieval or generation is active yet.
+
+## Development roadmap
+
+- **Days 1–5:** repository, backend, authentication and frontend project management — completed.
+- **Days 6–7:** independent FastAPI service, Maven parser and deterministic analysis — completed.
+- **Days 8–9:** ML feasibility research and experimental dataset preparation foundation — historical work; ML removed from active implementation on Day 10.
+- **Day 10:** AI-service audit, ML cleanup and RAG/LLM boundary preparation.
+- **Days 11–12:** evidence-source ingestion and RAG retrieval.
+- **Day 13:** evidence-grounded LLM assessment and structured reporting.
+- **Days 14–15:** Spring Boot integration and end-to-end workflow.
+- **Day 16 onward:** DevOps after MVP stability.
+
+See `docs/project-journal.md` for implementation history and verification records.
