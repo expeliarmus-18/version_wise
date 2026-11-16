@@ -49,6 +49,9 @@ pytest
 - `app/rag/embeddings.py`: local Hugging Face embedding model configuration.
 - `app/rag/vector_store.py`: persistent ChromaDB storage, deduplication and similarity search.
 - `app/rag/ingest.py`: end-to-end documentation ingestion workflow.
+- `app/rag/bm25_retriever.py`: cached BM25 keyword index over persisted documentation chunks.
+- `app/rag/fusion.py`: Reciprocal Rank Fusion with stable chunk-ID deduplication and retrieval metadata.
+- `app/rag/hybrid_search.py`: combines dense semantic and BM25 retrieval into ranked evidence.
 
 ## RAG documentation ingestion
 
@@ -95,11 +98,28 @@ Repeated ingestion is supported. Existing chunks are checked against their ident
 
 ### Retrieval
 
-The vector-store module exposes semantic similarity search over the persistent documentation collection.
+The service supports hybrid retrieval over the persistent documentation collection.
 
-This is the initial vector-retrieval foundation. Hybrid retrieval, BM25, reciprocal-rank fusion, and LLM-generated assessments are not part of Day 12.
+The retrieval pipeline:
 
-See `docs/rag/architecture.md` for the detailed design.
+1. Retrieves semantically relevant chunks using the existing ChromaDB vector store.
+2. Retrieves keyword matches using a cached BM25 index built from persisted chunks.
+3. Combines both rankings using Reciprocal Rank Fusion.
+4. Returns ranked LangChain documents with original source metadata and retrieval-ranking information.
+
+Default configuration:
+
+- Final results: 5
+- Candidates per retriever: 10
+- RRF constant: 60
+
+The application-facing entry point is `app.rag.hybrid_search.hybrid_search`.
+
+The BM25 index is cached in memory. Call `refresh_bm25_index()` after ingestion if the persisted collection changes within the same running process.
+
+The retrieval implementation does not generate LLM assessments.
+
+See `docs/rag/architecture.md` for implementation details and qualitative evaluation.
 
 ## Limitations
 
@@ -107,7 +127,7 @@ The Maven parser does not resolve Maven effective POMs, parent inheritance, impo
 
 The version comparator is not Apache Maven's complete `ComparableVersion`. Risk scores are deterministic heuristics, not calibrated failure probabilities.
 
-RAG ingestion and persistent vector storage are implemented, but hybrid retrieval, LLM calls, prompt execution, and integration with the Spring Boot backend are not yet implemented.
+RAG ingestion, persistent vector storage, dense semantic retrieval, BM25 keyword retrieval and hybrid retrieval are implemented. LLM calls, prompt execution, LLM-generated assessment and integration with the Spring Boot backend are not yet implemented.
 
 The assessment model remains a structured output contract; its existence does not mean that an LLM assessment has been generated.
 

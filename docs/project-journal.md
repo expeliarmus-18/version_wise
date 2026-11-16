@@ -1023,3 +1023,138 @@ No Git commit or push was made as part of this milestone. Repository review and 
 Day 13 — Implement hybrid retrieval by combining vector similarity retrieval with keyword retrieval, followed by reciprocal-rank fusion.
 
 Preserve the Day 12 ingestion foundation and existing application functionality.
+
+
+## Day 13 — Hybrid Documentation Retrieval
+
+### Objective
+
+Implement hybrid retrieval by combining the existing ChromaDB dense semantic retrieval with BM25 keyword retrieval and Reciprocal Rank Fusion.
+
+Preserve the Day 12 ingestion pipeline, approved source registry and existing application functionality.
+
+### Implementation
+
+Added:
+
+- `ai-service/app/rag/bm25_retriever.py`
+- `ai-service/app/rag/fusion.py`
+- `ai-service/app/rag/hybrid_search.py`
+- `ai-service/tests/test_rag_retrieval.py`
+
+Modified:
+
+- `ai-service/requirements.txt`
+
+Added the pinned dependency:
+
+- `rank-bm25==0.2.2`
+
+BM25 indexes the existing persisted ChromaDB documentation chunks. Technical identifiers are preserved as complete tokens and split into searchable components.
+
+The index is cached in memory. An explicit refresh function is available for rebuilding it after ingestion.
+
+Dense and keyword rankings are combined using Reciprocal Rank Fusion.
+
+Configuration:
+
+- RRF constant: 60
+- Final results: 5
+- Candidates per retriever: 10
+
+The fused results retain original document content and metadata, along with RRF score and individual retrieval ranks.
+
+### Corpus verification
+
+The persisted `versionwise_documentation` collection was inspected.
+
+- Apache Maven POM Reference: 124 chunks.
+- Spring Boot 3.0 Migration Guide: 78 chunks.
+- Hibernate ORM 6.0 Migration Guide: 78 chunks.
+- Total: 280 chunks.
+
+All 280 chunks had content and stable chunk identifiers.
+
+### Qualitative evaluation
+
+Five representative queries were evaluated against the actual persisted corpus.
+
+The queries covered:
+
+1. Spring Boot 3 migration breaking changes.
+2. Hibernate ORM 6 SQL and type-mapping changes.
+3. Maven dependency management and exclusions.
+4. Jakarta migration from javax APIs.
+5. Exact Spring Boot and Jakarta technical identifiers.
+
+The evaluation showed that dense and keyword retrieval can provide complementary results.
+
+Maven exclusion and Jakarta migration queries showed useful combined evidence. However, the Hibernate SQL and type-mapping query exposed a ranking limitation: some less relevant migration sections appeared above the strongest dense result.
+
+Candidate-pool sizes of 5, 10 and 20 were inspected for selected queries. A larger candidate pool did not consistently improve the final ranking.
+
+The defaults remain RRF k=60 and 10 candidates per retriever. No claim is made that these values are optimal.
+
+This was a qualitative evaluation, not a quantitative retrieval benchmark. No precision, recall, MRR or NDCG values are claimed.
+
+### Automated verification
+
+- New retrieval tests: 21 passed.
+- Existing application regression tests: 42 passed.
+- Complete test suite: **63 passed**.
+
+### Limitations and scope boundaries
+
+Completed:
+
+- Existing Day 12 ingestion and persistent vector-storage foundation preserved.
+- BM25 keyword retrieval.
+- Technical identifier-aware tokenization.
+- Reciprocal Rank Fusion.
+- Stable chunk-ID deduplication.
+- Retrieval metadata preservation.
+- Hybrid retrieval orchestration.
+- Retrieval unit tests.
+- Qualitative evaluation against the persisted corpus.
+
+Not implemented:
+
+- LLM integration.
+- Prompt execution.
+- LLM-generated assessments.
+- Reranking.
+- Agent workflows.
+- Backend or frontend integration.
+- Quantitative retrieval benchmarks.
+
+The BM25 index is cached. If ingestion modifies the collection within the same running process, the index must be refreshed.
+
+### Files changed
+
+Added:
+
+- `ai-service/app/rag/bm25_retriever.py`
+- `ai-service/app/rag/fusion.py`
+- `ai-service/app/rag/hybrid_search.py`
+- `ai-service/tests/test_rag_retrieval.py`
+
+Modified:
+
+- `ai-service/requirements.txt`
+- `ai-service/README.md`
+- `docs/rag/architecture.md`
+- `docs/project-journal.md`
+
+### Outcome
+
+Day 13 implements the hybrid retrieval foundation using the existing 280-chunk documentation corpus.
+
+The implementation combines semantic and keyword retrieval through Reciprocal Rank Fusion, preserves evidence metadata and passes the complete 63-test suite.
+
+The evaluation identifies both complementary retrieval behavior and ranking limitations. Hybrid retrieval is implemented, but its superiority over dense-only retrieval has not been established quantitatively.
+
+No Git commit or push has been made. Repository review and explicit approval are required before committing.
+
+### Next milestone
+
+Continue with the finalized Day 14–16 schedule. Preserve the completed Day 12 ingestion and Day 13 hybrid retrieval foundations.

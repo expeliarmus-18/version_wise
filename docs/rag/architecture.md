@@ -194,84 +194,186 @@ The ingestion workflow:
 
 The command returns a JSON report and uses a non-zero process exit status when source ingestion failures occur.
 
-## 9. Retrieval interface
 
-The vector-store module exposes semantic similarity search.
+## 9. Hybrid retrieval architecture
 
-The retrieval path uses the same embedding model as ingestion and searches the persistent ChromaDB collection.
+Day 13 extends the Day 12 semantic retrieval foundation with BM25 keyword retrieval and Reciprocal Rank Fusion (RRF).
 
-The initial representative retrieval query was:
+The hybrid retrieval implementation is maintained in:
 
-`What breaking changes should developers consider when migrating to Spring Boot 3?`
+- `ai-service/app/rag/bm25_retriever.py`
+- `ai-service/app/rag/fusion.py`
+- `ai-service/app/rag/hybrid_search.py`
 
-The returned results included relevant sections from the Spring Boot migration guide.
+The retrieval flow is:
 
-This is an initial functional check, not a benchmark or a comprehensive retrieval-quality evaluation.
+```text
+                    User Query
+                        |
+                +-------+-------+
+                |               |
+                v               v
+          Dense Retrieval   BM25 Retrieval
+                |               |
+                |         Persisted Chroma
+                |         chunks loaded into
+                |         cached BM25 index
+                |               |
+                +-------+-------+
+                        |
+                        v
+              Reciprocal Rank Fusion
+                        |
+                        v
+                 Ranked Evidence
+```
 
-## 10. Verification evidence
+### Dense retrieval
 
-Initial ingestion:
+Dense retrieval continues to use the existing LangChain Chroma vector store and the same local embedding model used during ingestion.
 
-- 3 sources attempted.
-- 3 sources successfully processed.
-- 280 chunks created and stored.
+It retrieves semantically related documentation chunks from the `versionwise_documentation` collection.
 
-Repeat ingestion:
+### BM25 keyword retrieval
 
-- 280 chunks received.
-- 280 unchanged chunks skipped.
-- 0 additional chunks added.
-- Collection remained at 280 chunks.
+BM25 uses `rank-bm25` and indexes the existing persisted documentation chunks.
 
-Additional checks:
+The index is built from ChromaDB documents and metadata. It does not independently fetch documentation, re-ingest sources or generate embeddings.
 
-- Dependency consistency check passed.
-- Python compilation check passed.
-- Existing pytest suite: 42 passed.
-- Representative semantic retrieval returned relevant Spring Boot migration-guide sections.
+The tokenizer preserves complete technical identifiers while also indexing their components. This supports searches involving identifiers such as:
 
-The existing 42 tests are regression tests for the existing application and assessment contract; they should not be interpreted as 42 RAG-specific tests.
+- `jakarta.persistence`
+- `spring-boot`
+- `org.springframework.boot:spring-boot-starter-web:3.0.0`
+
+The in-memory BM25 index is cached to avoid rebuilding it for every query.
+
+`refresh_bm25_index()` is available to rebuild the cached index after documentation ingestion when ingestion and retrieval share a running process.
+
+### Reciprocal Rank Fusion
+
+Dense and BM25 rankings are combined using Reciprocal Rank Fusion.
+
+The contribution of a result at rank \(r\) is:
+
+\[
+\frac{1}{k+r}
+\]
+
+The contributions from both retrieval rankings are added for each unique chunk.
+
+Configuration:
+
+| Setting | Default |
+|---|---:|
+| RRF constant (`rrf_k`) | 60 |
+| Final result count (`top_k`) | 5 |
+| Candidates per retriever | 10 |
+
+The implementation:
+
+- Uses one-based ranks.
+- Deduplicates chunks using stable chunk identifiers.
+- Does not combine raw vector similarity and BM25 scores.
+- Preserves original document content and metadata.
+- Adds `rrf_score`, `dense_rank` and `bm25_rank` to returned metadata.
+- Supports results present in only one retrieval ranking.
+
+### Retrieval interface
+
+The application-facing entry point is:
+
+`hybrid_search(query, top_k=5, retrieval_candidates=10, rrf_k=60)`
+
+It returns LangChain `Document` objects containing ranked evidence and retrieval metadata.
+
+This is a retrieval capability only. It does not generate LLM responses or assessments.
+
+## 10. Verification and qualitative evaluation
+
+### Corpus verification
+
+The existing persisted collection was inspected before implementing hybrid retrieval.
+
+| Source | Stored chunks |
+|---|---:|
+| Apache Maven POM Reference | 124 |
+| Spring Boot 3.0 Migration Guide | 78 |
+| Hibernate ORM 6.0 Migration Guide | 78 |
+| **Total** | **280** |
+
+All 280 stored chunks had content and stable chunk identifiers. The inspected corpus also retained the expected source and section metadata.
+
+### Automated tests
+
+The new retrieval test module covers:
+
+- Technical identifier tokenization.
+- BM25 relevance and version matching.
+- Empty corpus and unmatched queries.
+- Invalid retrieval arguments.
+- RRF score calculation and deduplication.
+- Dense-only and BM25-only results.
+- Metadata preservation.
+- Hybrid retrieval orchestration.
+
+Verification results:
+
+- Existing regression tests: 42 passed.
+- New retrieval tests: 21 passed.
+- Complete test suite: **63 passed**.
+
+### Qualitative retrieval evaluation
+
+Five representative queries were evaluated against the actual persisted documentation corpus.
+
+The evaluation compared dense retrieval, BM25 retrieval and fused hybrid results.
+
+Observed findings:
+
+- Spring Boot migration queries retrieved complementary evidence from dependency review, Spring Security, configuration properties and Jakarta EE sections.
+- Hibernate SQL and type-mapping retrieval exposed a limitation: some fused results ranked less relevant material, such as an hbm.xml migration section, above the strongest dense result.
+- Maven dependency-management and exclusion queries benefited from complementary keyword and semantic matches.
+- Jakarta migration queries retrieved relevant Jakarta EE and Jakarta Persistence sections.
+- Exact technical-identifier queries benefited from preserving complete identifiers and their components in BM25 tokenization.
+
+Candidate-pool sizes of 5, 10 and 20 were also inspected for selected queries. Increasing the candidate pool did not consistently improve the top results.
+
+The default candidate count remains 10, and the RRF constant remains 60. These are configurable implementation defaults, not experimentally established optimal values.
+
+This evaluation is qualitative. No precision, recall, MRR, NDCG or other quantitative retrieval benchmark is claimed.
 
 ## 11. Current limitations
 
-The current implementation is an ingestion and vector-retrieval foundation.
+The current implementation provides:
 
-It does not yet provide:
-
+- Approved documentation ingestion.
+- Section-aware chunking.
+- Local embedding generation.
+- Persistent ChromaDB storage.
+- Dense semantic retrieval.
 - BM25 keyword retrieval.
-- Hybrid retrieval.
-- Reciprocal-rank fusion.
-- Retrieval evaluation or ranking benchmarks.
-- LLM integration.
-- Prompt construction and execution.
-- Structured LLM assessment generation.
-- Spring Boot or frontend integration.
+- Reciprocal Rank Fusion.
+- Ranked evidence with source and retrieval metadata.
 
-The extracted content is based on the registered HTML pages. The pipeline does not currently claim complete coverage of every linked page or every version of each library's documentation.
+It does not provide:
+
+- LLM generation or assessment.
+- Reranking models.
+- Query expansion.
+- Agent workflows or LangGraph.
+- Backend or frontend integration.
+- Quantitative retrieval benchmarks.
+- Guaranteed ranking superiority over dense-only retrieval.
+
+The BM25 index is cached in memory. If the persisted collection changes while the same process remains active, the index must be refreshed.
+
+The corpus still consists of exactly the three approved documentation sources. Its coverage is not a guarantee of every linked page or every library version.
 
 ## 12. Planned evolution
 
-The next planned milestone is hybrid retrieval.
+The next planned milestone is the next stage of the VersionWise AI-service roadmap.
 
-The intended retrieval flow is:
+Day 13 completes the hybrid retrieval foundation. Subsequent work must follow the finalized project schedule and assessment contract.
 
-```text
-              User Query
-                  |
-          +-------+-------+
-          |               |
-          v               v
-    Vector Search     BM25 Search
-          |               |
-          +-------+-------+
-                  |
-                  v
-       Reciprocal-Rank Fusion
-                  |
-                  v
-          Ranked Evidence
-```
-
-Subsequent milestones will introduce LLM assessment and connect the resulting capability to the wider VersionWise application.
-
-These are planned capabilities, not part of the current Day 12 implementation.
+LLM assessment, prompt execution and application integration remain separate capabilities and must not be treated as implemented by this retrieval milestone.
