@@ -841,3 +841,185 @@ The test run emitted no pytest warning in its final output. No claim is made her
 - [ ] Commit/push only after explicit developer approval.
 
 **Day 10 outcome:** The cleaned implementation and documentation are prepared for review. The available test run passes, but Day 10 must not be marked fully closed until the developer performs the Windows-environment verification and reviews the repository diff.
+
+
+## Day 12 — LangChain RAG Documentation Ingestion Foundation
+
+**Status:** Implementation, verification and documentation completed; final repository review and Git closeout pending.
+
+### Objective
+
+Implement the first RAG milestone for VersionWise: a repeatable documentation-ingestion pipeline that retrieves approved technical documentation, extracts and chunks its content, generates local embeddings, and persists the resulting vectors in ChromaDB.
+
+### Architecture decisions
+
+- Use LangChain for document representation, text splitting, embeddings integration and vector-store integration.
+- Use HTTPX for documentation retrieval.
+- Use BeautifulSoup for HTML content extraction.
+- Use `BAAI/bge-small-en-v1.5` as the local embedding model.
+- Run embeddings locally on CPU; no paid embedding API is required.
+- Use persistent ChromaDB storage.
+- Preserve source provenance and document metadata through the ingestion pipeline.
+- Use content hashes and chunk identifiers to support repeatable ingestion and deduplication.
+- Keep the RAG implementation under `ai-service/app/rag/`.
+- Preserve the existing Maven parser and deterministic analysis implementation.
+
+### Approved documentation sources
+
+The initial source registry contains exactly three sources:
+
+1. Apache Maven POM Reference
+   `https://maven.apache.org/pom.html`
+
+2. Spring Boot 3.0 Migration Guide
+   `https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-3.0-Migration-Guide`
+
+3. Hibernate ORM 6.0 Migration Guide
+   `https://docs.hibernate.org/orm/6.0/migration-guide/migration-guide/`
+
+No additional documentation sources were introduced during this milestone.
+
+### Implementation
+
+Added the following modules:
+
+- `app/rag/sources.py` — approved source registry and source metadata.
+- `app/rag/loader.py` — HTTP retrieval, HTML extraction and LangChain document creation.
+- `app/rag/chunker.py` — heading-aware and recursive text splitting, section metadata and content hashing.
+- `app/rag/embeddings.py` — cached local Hugging Face embedding configuration.
+- `app/rag/vector_store.py` — persistent ChromaDB collection, deduplication, obsolete-chunk cleanup and semantic similarity search.
+- `app/rag/ingest.py` — ingestion orchestration and JSON execution report.
+
+### RAG configuration
+
+- Embedding model: `BAAI/bge-small-en-v1.5`
+- Execution device: CPU
+- Vector store: ChromaDB
+- Collection name: `versionwise_documentation`
+- Target chunk size: 1,200 characters
+- Chunk overlap: 150 characters
+- Persistent storage: `ai-service/data/chroma/`
+- Local vector-store data is excluded from Git.
+
+### Dependencies
+
+Added and installed the LangChain, ChromaDB, embedding and HTML-extraction dependencies.
+
+The principal pinned versions are:
+
+- `langchain-core==0.3.86`
+- `langchain-text-splitters==0.3.11`
+- `langchain-chroma==0.2.6`
+- `langchain-huggingface==0.3.1`
+- `chromadb==1.5.9`
+- `sentence-transformers==5.1.2`
+- `beautifulsoup4==4.15.0`
+
+HTTPX remains declared as an HTTP dependency.
+
+### Verification
+
+**Initial ingestion**
+
+- Sources attempted: 3
+- Sources successfully ingested: 3
+- Sources failed: 0
+- Maven chunks: 124
+- Spring Boot chunks: 78
+- Hibernate chunks: 78
+- Total chunks created: 280
+- Chunks added to storage: 280
+- Initial collection count: 280
+
+**Repeat ingestion**
+
+- Sources successfully ingested: 3
+- Chunks received: 280
+- Unique chunks: 280
+- Chunks added or updated: 0
+- Unchanged chunks skipped: 280
+- Obsolete chunks removed: 0
+- Collection count remained: 280
+
+This confirms that a repeated ingestion of unchanged source content did not create duplicate stored chunks.
+
+**Semantic retrieval**
+
+Executed a representative query:
+
+`What breaking changes should developers consider when migrating to Spring Boot 3?`
+
+The top five results were retrieved from the Spring Boot 3.0 Migration Guide and included relevant sections such as dependency review, migration, configuration properties and Spring Security changes.
+
+This verifies a representative semantic retrieval path; it is not a comprehensive retrieval-quality evaluation.
+
+**Environment and regression checks**
+
+- `pip check`: no broken requirements.
+- `python -m compileall -q app`: successful.
+- Complete existing pytest suite: **42 passed**.
+- `git diff --check`: no whitespace errors; Git displayed an LF-to-CRLF line-ending warning.
+
+The 42 tests cover the existing application functionality and assessment contract. They are not 42 RAG-specific automated tests.
+
+### Scope boundaries
+
+Completed in Day 12:
+
+- Approved documentation registry.
+- Document retrieval and extraction.
+- Section-aware chunking.
+- Local embedding configuration.
+- Persistent ChromaDB storage.
+- Repeatable ingestion and deduplication.
+- Initial semantic similarity search.
+
+Explicitly deferred:
+
+- BM25 keyword retrieval.
+- Hybrid retrieval and reciprocal-rank fusion.
+- LLM integration and prompt execution.
+- Structured LLM assessment generation.
+- Spring Boot integration.
+- Frontend integration.
+
+These remain part of the subsequent planned milestones.
+
+### Files changed
+
+Modified:
+
+- `ai-service/requirements.txt`
+- `ai-service/.gitignore`
+
+Added:
+
+- `ai-service/app/rag/sources.py`
+- `ai-service/app/rag/loader.py`
+- `ai-service/app/rag/chunker.py`
+- `ai-service/app/rag/embeddings.py`
+- `ai-service/app/rag/vector_store.py`
+- `ai-service/app/rag/ingest.py`
+
+No existing parser, deterministic analysis, API route or assessment-model implementation was intentionally changed.
+Documentation updated or added:
+
+- `ai-service/README.md`
+- `docs/project-journal.md`
+- `docs/rag/architecture.md`
+
+### Outcome
+
+Day 12 establishes a working local RAG ingestion and vector-storage foundation using the three approved documentation sources.
+
+The ingestion pipeline successfully processed all three sources, persisted 280 chunks, skipped all 280 unchanged chunks on repeat ingestion, and returned relevant results for a representative semantic query.
+
+Existing application regression tests passed.
+
+No Git commit or push was made as part of this milestone. Repository review and explicit developer approval are required before committing.
+
+### Next milestone
+
+Day 13 — Implement hybrid retrieval by combining vector similarity retrieval with keyword retrieval, followed by reciprocal-rank fusion.
+
+Preserve the Day 12 ingestion foundation and existing application functionality.
