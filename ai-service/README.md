@@ -132,3 +132,37 @@ RAG ingestion, persistent vector storage, dense semantic retrieval, BM25 keyword
 The assessment model remains a structured output contract; its existence does not mean that an LLM assessment has been generated.
 
 No ML training or ML prediction runtime is part of the active service.
+### Local LLM Configuration
+
+VersionWise AI uses Ollama for locally hosted assessment generation.
+
+#### Required Models
+
+Pull the required models:
+
+```bash
+ollama pull phi4-mini
+ollama pull nomic-embed-text
+```
+
+Ensure Ollama is running locally:
+
+```bash
+ollama serve
+```
+
+#### Configuration
+
+The AI service supports the following environment variables:
+
+| Variable | Default | Description |
+|---|---|---|
+| `OLLAMA_MODEL` | `phi4-mini` | Assessment generation model |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API endpoint |
+| `OLLAMA_NUM_CTX` | `4096` | Model context window configuration |
+| `OLLAMA_NUM_PREDICT` | `512` | Maximum generated tokens |
+| `OLLAMA_TIMEOUT_SECONDS` | `120` | Request timeout |
+
+The assessment model runs locally through Ollama. Documentation embeddings continue to use the configured embedding model and existing persistent Chroma vector store.
+
+No external LLM API key is required for local assessment generation.

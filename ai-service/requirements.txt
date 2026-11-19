@@ -8,6 +8,8 @@ langchain-core==0.3.86
 langchain-text-splitters==0.3.11
 langchain-chroma==0.2.6
 langchain-huggingface==0.3.1
+langchain-ollama==0.3.10
+
 chromadb==1.5.9
 sentence-transformers==5.1.2
 beautifulsoup4==4.15.0

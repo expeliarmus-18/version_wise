@@ -1158,3 +1158,64 @@ No Git commit or push has been made. Repository review and explicit approval are
 ### Next milestone
 
 Continue with the finalized Day 14–16 schedule. Preserve the completed Day 12 ingestion and Day 13 hybrid retrieval foundations.
+
+## Day 14 — Local LLM Integration & Evidence-Grounded Upgrade Assessment
+
+**Status:** Completed  
+**Date:** November 19, 2026
+
+### Objective
+
+Integrate a local LLM into the VersionWise AI service to generate structured, evidence-grounded dependency upgrade assessments using the existing hybrid RAG retrieval pipeline.
+
+### Implementation
+
+- Migrated the assessment LLM provider to local Ollama inference.
+- Configured Phi-4 Mini as the assessment generation model.
+- Retained Nomic Embed Text for documentation embeddings.
+- Integrated the Ollama provider through the existing LLM provider abstraction.
+- Implemented structured output generation using the existing `LLMAssessmentDraft` Pydantic schema.
+- Added output validation and provider error handling.
+- Preserved the existing assessment service, evidence package, retrieval pipeline, and public `UpgradeAssessment` response schema.
+- Updated runtime configuration to support Ollama model and connection settings.
+- Updated project dependencies for the Ollama integration.
+
+### Integration
+
+The complete assessment pipeline was successfully tested:
+
+1. API request received.
+2. Dependency information processed.
+3. Hybrid RAG retrieval executed.
+4. Relevant Spring Boot migration documentation retrieved.
+5. Evidence package supplied to the local LLM.
+6. Phi-4 Mini generated a structured assessment.
+7. Assessment response validated and returned through the API.
+
+### Validation
+
+- Direct Ollama provider test: **PASS**
+- Structured JSON generation: **PASS**
+- Pydantic validation: **PASS**
+- End-to-end assessment API test: **PASS**
+- Hybrid documentation retrieval: **PASS**
+- Relevant Spring Boot 3.0 migration evidence retrieved: **PASS**
+- Automated test suite: **100 passed**
+
+### Known Limitations
+
+Assessment quality remains preliminary.
+
+The model may return `INSUFFICIENT_EVIDENCE` even when relevant documentation has been retrieved. The current implementation prioritizes evidence grounding and avoiding unsupported compatibility claims over aggressive assessment generation.
+
+Further improvements to assessment quality, prompt optimization, severity reasoning, and evidence interpretation are deferred until the complete VersionWise application is integrated end-to-end.
+
+### Decision
+
+Day 14 is considered functionally complete.
+
+The project will prioritize end-to-end application integration during Day 15 and final testing, documentation, and release preparation during Day 16.
+
+### Day 14 Outcome
+
+The VersionWise AI service now supports locally generated, structured upgrade assessments using Ollama and Phi-4 Mini, integrated with the existing hybrid RAG documentation retrieval pipeline.
