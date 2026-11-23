@@ -34,3 +34,5 @@ chroma_db/
 *.log
 .DS_Store
 Thumbs.db
+# Personal development journal (keep local, never commit)
+docs/project-journal.md

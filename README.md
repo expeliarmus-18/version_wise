@@ -1,224 +1,185 @@
 # VersionWise
 
-VersionWise is an AI-assisted Java/Maven dependency-upgrade analysis platform. It helps developers inspect declared dependencies, understand deterministic upgrade-risk signals, and—after the planned RAG and LLM milestones—review evidence-grounded upgrade recommendations.
+VersionWise is a full-stack application for assessing Java/Maven dependency upgrades. It combines deterministic dependency analysis with documentation-grounded AI assessment to help developers understand upgrade risks, relevant migration guidance, and potential compatibility concerns.
 
-## Current architecture
+## Features
 
-- **Frontend:** React, JavaScript, Vite, CSS.
-- **Backend:** Java 21, Spring Boot 3.5.16, Spring Security, JWT, Spring Data JPA.
-- **Application database:** PostgreSQL, owned by the Spring Boot backend.
-- **AI service:** Python 3.10+, FastAPI and Pydantic.
-- **Current dependency analysis:** Maven POM declaration parsing and a deterministic, rule-based upgrade-risk baseline.
-- **Planned evidence retrieval:** official technical documentation indexed for retrieval; ChromaDB is a candidate local vector store.
-- **Planned generation:** a hosted LLM that assesses structured dependency information and retrieved evidence.
+- **Dependency upgrade analysis:** compare a dependency's current and target versions.
+- **Deterministic risk analysis:** rule-based findings and risk scoring provide a consistent baseline.
+- **Documentation-grounded assessment:** retrieve relevant Maven and framework documentation using hybrid retrieval.
+- **Local LLM assessment:** use Ollama for locally hosted assessment generation.
+- **Optional Maven project context:** upload a `pom.xml` to provide project coordinates, dependency declarations, parent information, and dependency-management context.
+- **Project management:** authenticated users can create and manage projects.
+- **Evidence-aware output:** assessments are expected to distinguish supported findings from insufficient evidence rather than treating project context as technical proof.
 
-The Python AI service runs independently. It is not currently connected to Spring Boot.
+## Architecture
 
-## Current implementation status
+```text
+React + Vite frontend
+        |
+        v
+Spring Boot backend
+  - Authentication
+  - User-scoped project management
+  - Analysis workflow / AI-service integration
+        |
+        v
+FastAPI AI service
+  - Maven POM parsing
+  - Deterministic analysis
+  - Documentation ingestion
+  - Dense + BM25 hybrid retrieval
+  - Local Ollama assessment
+        |
+        +---- ChromaDB documentation store
+        |
+        +---- Ollama local models
+```
 
-### Implemented
+### Technology stack
 
-- JWT-based user registration, login and stateless backend authentication.
-- User-scoped project CRUD through the Spring Boot API.
-- React authentication and authenticated project dashboard.
-- Independent FastAPI service with health, POM parsing and upgrade-analysis endpoints.
-- Maven POM declaration parsing, including direct dependencies, dependency-management declarations, common scopes, optional flags and locally declared property substitution.
-- Conservative version comparison for a bounded set of common release and qualifier formats.
-- Explainable deterministic risk scoring.
-
-### Not implemented yet
-
-- Full Maven effective-POM resolution.
-- Parent POM inheritance, imported BOM resolution, transitive dependency resolution, profile activation, Maven settings or environment-specific property resolution.
-- RAG document ingestion, embedding generation, vector storage or retrieval.
-- LLM calls or generated upgrade assessments.
-- Spring Boot ↔ FastAPI integration and end-to-end dependency-analysis workflow.
-- Any ML model or active ML dataset-preparation pipeline.
-
-Machine learning was evaluated during Days 8–9 and rejected for the active implementation because a sufficiently representative, reliable labeled dataset was not available. The historical feasibility research is retained under `docs/ml/`; it is not an active product dependency.
+| Layer | Technology |
+|---|---|
+| Frontend | React, Vite |
+| Backend | Java 21, Spring Boot |
+| Persistence | PostgreSQL |
+| AI service | Python, FastAPI, Pydantic |
+| Documentation retrieval | LangChain, ChromaDB, dense semantic retrieval, BM25, Reciprocal Rank Fusion |
+| Local model runtime | Ollama |
 
 ## Repository structure
 
 ```text
 VersionWise/
-├── backend/                 # Spring Boot API, security and persistence
-├── frontend/                # React + Vite application
-├── ai-service/              # Independent Python analysis service
-│   ├── app/
-│   │   ├── analysis/        # Maven parser, comparator and rule engine
-│   │   ├── api/routes/      # FastAPI endpoints
-│   │   ├── core/            # Reserved for shared configuration
-│   │   ├── llm/             # Reserved for Day 13 implementation
-│   │   ├── models/          # API and future assessment contracts
-│   │   ├── parser/          # Reserved for future parser separation if needed
-│   │   └── rag/             # Reserved for Days 11–12 implementation
-│   ├── tests/
-│   ├── requirements.txt
-│   └── README.md
+├── backend/              # Spring Boot application
+├── frontend/             # React + Vite application
+├── ai-service/           # FastAPI analysis and AI service
 ├── docs/
-│   ├── ml/                  # Historical ML feasibility research
-│   └── project-journal.md
-├── README.md
-└── .gitignore
+│   └── rag/
+│       └── architecture.md
+└── README.md
 ```
 
-Reserved `core`, `parser`, `rag` and `llm` packages are architectural boundaries only. They do not imply that RAG or LLM functionality has been implemented. The working Maven parser remains in `app/analysis/maven_parser.py` to avoid unnecessary churn.
+Personal development journal and local generated data are intentionally not part of the public repository.
 
-## Backend setup
-
-### Requirements
+## Prerequisites
 
 - Java 21
-- Maven Wrapper (included)
+- Node.js and npm
+- Python 3.10+
 - PostgreSQL
+- Ollama, for local LLM assessment
 
-Configure the backend's environment variables before startup:
+## Running locally
 
-- `DB_URL`
-- `DB_USERNAME`
-- `DB_PASSWORD`
-- `JWT_SECRET`
+The services run independently. Configure each service using its local environment configuration and the examples provided in the corresponding directories.
 
-Run from the repository root:
+### 1. Backend
 
-```bat
+From `backend/`, configure the database and required application environment variables. The backend uses PostgreSQL and provides authentication, project management, and the application analysis workflow.
+
+On Windows PowerShell:
+
+```powershell
 cd backend
-mvnw.cmd spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
-The backend health endpoint is `http://localhost:8080/api/health`.
+### 2. Frontend
 
-### Backend API
+From `frontend/`:
 
-Public endpoints:
-
-- `GET /api/health`
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-
-Protected project endpoints (JWT Bearer token required):
-
-- `POST /api/projects`
-- `GET /api/projects`
-- `GET /api/projects/{id}`
-- `PUT /api/projects/{id}`
-- `DELETE /api/projects/{id}`
-
-Database credentials and JWT signing secrets must remain outside version control.
-
-## Frontend setup
-
-Requirements: Node.js and npm.
-
-```bat
-cd frontend
+```powershell
 npm install
-copy .env.example .env
 npm run dev
 ```
 
-The default local frontend origin is `http://localhost:5173`; the backend's development CORS configuration currently allows that origin. Frontend checks:
+Use the frontend's environment example to configure the backend URL for local development.
 
-```bat
+### 3. AI service
+
+From `ai-service/`, create and activate a Python virtual environment, install dependencies, and start FastAPI:
+
+```powershell
+cd ai-service
+py -3.10 -m venv .versionwise
+.\.versionwise\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+python -m uvicorn app.main:app --reload
+```
+
+The API documentation is available at `http://127.0.0.1:8000/docs`.
+
+### 4. Local model runtime
+
+Install Ollama and pull the configured models:
+
+```powershell
+ollama pull phi4-mini
+ollama pull nomic-embed-text
+ollama serve
+```
+
+The AI service can be configured through the `OLLAMA_*` environment variables documented in `ai-service/README.md`.
+
+### 5. Documentation ingestion
+
+The AI service's documentation corpus must be ingested before retrieval can use the local documentation store. From the `ai-service/` directory, with the Python environment active:
+
+```powershell
+python -m app.rag.ingest
+```
+
+The ingestion command reports source processing results, chunk counts, and storage information.
+
+## Testing
+
+### Frontend
+
+```powershell
+cd frontend
 npm run lint
 npm run build
 ```
 
-Never put private API keys, database credentials or signing secrets in Vite environment variables.
+### Backend
 
-## Python AI service setup
+From `backend/`:
 
-Requirements: Python 3.10 or later.
-
-From the repository root:
-
-```bat
-cd ai-service
-py -3.10 -m venv .versionwise
-.versionwise\Scripts\activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+```powershell
+.\mvnw.cmd test
 ```
 
-Start the independent service:
+### AI service
 
-```bat
-python -m uvicorn app.main:app --reload
+From `ai-service/`, with the Python environment active:
+
+```powershell
+python -m pytest tests -q
 ```
 
-Local base URL: `http://127.0.0.1:8000`
+The finalization test run completed successfully:
 
-Interactive API documentation: `http://127.0.0.1:8000/docs`
+- Frontend build: passed
+- Frontend lint: 0 errors; one non-blocking warning
+- Backend: 8 tests passed
+- AI service: 100 tests passed
 
-### AI-service endpoints
+## Important limitations
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/health` | Service health |
-| POST | `/api/v1/parse-pom` | Parse Maven POM declarations |
-| POST | `/api/v1/analyze-upgrade` | Calculate deterministic upgrade-risk signals |
+- Maven parsing is not equivalent to resolving a Maven effective POM. Parent inheritance, imported BOM resolution, active profiles, Maven settings, transitive dependencies, and environment-specific properties are not fully resolved.
+- Version comparison is conservative and bounded; it is not a complete implementation of Maven's `ComparableVersion`.
+- Deterministic risk findings are heuristic signals, not calibrated probabilities of upgrade failure.
+- An uploaded POM is optional project context. It is not technical evidence and does not independently establish compatibility, breaking changes, or security findings.
+- Documentation retrieval and assessment quality depend on the available corpus and retrieved evidence. The service may return an insufficient-evidence result when it cannot establish a defensible answer.
+- No trained ML model is part of the active application.
 
-Run the service tests from `ai-service/`:
+## Documentation
 
-```bat
-pytest
-```
+- [AI service README](ai-service/README.md) — setup, configuration, API, analysis modules, RAG, local assessment, and POM context.
+- [RAG architecture](docs/rag/architecture.md) — ingestion, hybrid retrieval, assessment flow, design decisions, and limitations.
 
-### Parser behavior and limitations
+## Security and local data
 
-The parser handles Maven XML namespaces and extracts project/parent coordinates, direct dependencies and dependency-management declarations separately. It captures dependency scope, type, classifier and optional status. It resolves locally declared properties, including nested references, and preserves unresolved expressions with warnings. Unsafe XML is rejected.
-
-It is a POM declaration parser, not Maven's effective-POM engine. It does not resolve parent inheritance, imported BOMs, transitive dependencies, active profiles, Maven settings, external properties or environment-specific Maven model behavior. A dependency without a local version may receive its version from Maven dependency management or inheritance, but this service does not compute that effective version.
-
-### Deterministic analysis behavior and limitations
-
-The upgrade analyzer uses explicit rules and returns a score, category, evaluated factors, warnings and recommendations. The score is a heuristic signal, not a trained-model prediction, calibrated probability or guarantee of compatibility.
-
-The version comparator intentionally supports a bounded set of common numeric versions and qualifiers. Unsupported or ambiguous formats return `unknown`; it is not a complete implementation of Apache Maven's `ComparableVersion`.
-
-The future LLM must consider parser uncertainty and deterministic findings alongside retrieved evidence. It must be able to return `INSUFFICIENT_EVIDENCE` rather than infer compatibility from missing information.
-
-## Planned RAG and LLM flow
-
-```text
-Maven POM
-   |
-   v
-POM declaration parser
-   |
-   v
-Structured dependency data
-   |
-   v
-Deterministic upgrade analysis
-   |
-   +-------------------------------+
-   |                               |
-   v                               v
-Structured analysis          RAG retrieval
-signals                       (Days 11–12)
-   |                               |
-   +---------------+---------------+
-                   |
-                   v
-             LLM assessment
-                (Day 13)
-                   |
-                   v
-       Structured, evidence-grounded report
-```
-
-The future report contract is defined in `app/models/assessment.py`. It includes `RECOMMENDED`, `NOT_RECOMMENDED` and `INSUFFICIENT_EVIDENCE` statuses, structured finding groups, evidence references and limitations. This is a data contract only; no retrieval or generation is active yet.
-
-## Development roadmap
-
-- **Days 1–5:** repository, backend, authentication and frontend project management — completed.
-- **Days 6–7:** independent FastAPI service, Maven parser and deterministic analysis — completed.
-- **Days 8–9:** ML feasibility research and experimental dataset preparation foundation — historical work; ML removed from active implementation on Day 10.
-- **Day 10:** AI-service audit, ML cleanup and RAG/LLM boundary preparation.
-- **Days 11–12:** evidence-source ingestion and RAG retrieval.
-- **Day 13:** evidence-grounded LLM assessment and structured reporting.
-- **Days 14–15:** Spring Boot integration and end-to-end workflow.
-- **Day 16 onward:** DevOps after MVP stability.
-
-See `docs/project-journal.md` for implementation history and verification records.
+Do not commit secrets, `.env` files, local databases, generated vector stores, model files, or personal notes. Keep local configuration in ignored files and use `.env.example` files for safe configuration templates.
