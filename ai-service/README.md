@@ -166,3 +166,36 @@ The AI service supports the following environment variables:
 The assessment model runs locally through Ollama. Documentation embeddings continue to use the configured embedding model and existing persistent Chroma vector store.
 
 No external LLM API key is required for local assessment generation.
+
+### Optional Maven Project Context
+
+VersionWise supports optional Maven `pom.xml` upload during dependency upgrade assessment.
+
+When a POM is provided, VersionWise parses available project information and passes bounded project context to the AI assessment service. This context may improve the relevance of documentation retrieval and generated assessments.
+
+The extracted context may include:
+
+- Project coordinates
+- Parent project coordinates
+- Declared direct dependencies
+- Dependency management information
+- Parsing warnings
+
+The POM is optional. Dependency coordinates and versions can still be entered manually without uploading a project file.
+
+#### Important Limitations
+
+The uploaded POM is used as project context only. It is not treated as technical evidence.
+
+VersionWise does not currently:
+
+- Resolve the effective Maven POM
+- Execute Maven
+- Automatically resolve transitive dependencies
+- Guarantee that every dependency version can be extracted
+- Use project context as proof of compatibility or breaking changes
+
+Compatibility, breaking changes, security findings, and migration recommendations must remain grounded in retrieved technical documentation.
+
+The deterministic risk score is independent of the uploaded POM context.
+

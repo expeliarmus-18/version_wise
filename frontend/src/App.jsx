@@ -56,23 +56,23 @@ function AuthPage({ onLogin }) {
     <aside className="hero-panel">
       <div className="hero-top"><Brand /><span className="preview-pill"><i /> MVP PREVIEW</span></div>
       <div className="hero-copy"><p className="eyebrow">DEPENDENCY INTELLIGENCE</p><h1>Upgrade with<br /><span>confidence.</span></h1><p className="hero-description">Understand what changes, what breaks, and what to do next before your dependencies move forward.</p>
-        <div className="feature"><span>↗</span><div><strong>Make informed upgrades</strong><p>Turn dependency changes into clearer decisions.</p></div></div>
-        <div className="feature"><span>⌘</span><div><strong>Built for developers</strong><p>Designed around the tools and workflows you use.</p></div></div>
+        <div className="feature"><span>â†—</span><div><strong>Make informed upgrades</strong><p>Turn dependency changes into clearer decisions.</p></div></div>
+        <div className="feature"><span>âŒ˜</span><div><strong>Built for developers</strong><p>Designed around the tools and workflows you use.</p></div></div>
       </div>
-      <p className="hero-footer">● EARLY ACCESS <span>/</span> BUILT FOR JAVA TEAMS</p>
+      <p className="hero-footer">â— EARLY ACCESS <span>/</span> BUILT FOR JAVA TEAMS</p>
     </aside>
     <section className="form-panel"><div className="mobile-brand"><Brand /></div><div className="form-wrap">
       <p className="form-kicker">{registering ? 'GET STARTED' : 'WELCOME BACK'}</p><h2>{registering ? 'Create your account' : 'Sign in to VersionWise'}</h2><p className="form-intro">{registering ? 'Start making more confident dependency decisions.' : 'Your next upgrade decision starts here.'}</p>
       <div className="tabs"><button type="button" className={!registering ? 'active' : ''} onClick={() => { setMode('login'); setNotice(null); setErrors({}) }}>Sign in</button><button type="button" className={registering ? 'active' : ''} onClick={() => { setMode('register'); setNotice(null); setErrors({}) }}>Create account</button></div>
       <form onSubmit={submit} noValidate>
         <label htmlFor="email">Email address</label><div className={`input-wrap ${errors.email ? 'invalid' : ''}`}><span>@</span><input id="email" type="email" autoComplete="email" placeholder="you@company.com" maxLength={254} value={email} onChange={e => { setEmail(e.target.value); setErrors(p => ({ ...p, email: undefined })); setNotice(null) }} /></div>{errors.email && <p className="field-error">{errors.email}</p>}
-        <div className="password-label"><label htmlFor="password">Password</label>{registering && <span>12+ characters</span>}</div><div className={`input-wrap ${errors.password ? 'invalid' : ''}`}><span>◇</span><input id="password" type={showPassword ? 'text' : 'password'} autoComplete={registering ? 'new-password' : 'current-password'} placeholder={registering ? 'Create a strong password' : 'Enter your password'} maxLength={72} value={password} onChange={e => { setPassword(e.target.value); setErrors(p => ({ ...p, password: undefined })); setNotice(null) }} /><button className="show-password" type="button" onClick={() => setShowPassword(v => !v)}>{showPassword ? 'Hide' : 'Show'}</button></div>{errors.password && <p className="field-error">{errors.password}</p>}
+        <div className="password-label"><label htmlFor="password">Password</label>{registering && <span>12+ characters</span>}</div><div className={`input-wrap ${errors.password ? 'invalid' : ''}`}><span>â—‡</span><input id="password" type={showPassword ? 'text' : 'password'} autoComplete={registering ? 'new-password' : 'current-password'} placeholder={registering ? 'Create a strong password' : 'Enter your password'} maxLength={72} value={password} onChange={e => { setPassword(e.target.value); setErrors(p => ({ ...p, password: undefined })); setNotice(null) }} /><button className="show-password" type="button" onClick={() => setShowPassword(v => !v)}>{showPassword ? 'Hide' : 'Show'}</button></div>{errors.password && <p className="field-error">{errors.password}</p>}
         {notice && <div className={`notice ${notice.type}`} role={notice.type === 'error' ? 'alert' : 'status'}>{notice.text}</div>}
-        <button className="primary-button" type="submit" disabled={busy}>{busy ? <><span className="spinner" /> {registering ? 'Creating account…' : 'Signing in…'}</> : <>{registering ? 'Create account' : 'Sign in'} <span>→</span></>}</button>
+        <button className="primary-button" type="submit" disabled={busy}>{busy ? <><span className="spinner" /> {registering ? 'Creating accountâ€¦' : 'Signing inâ€¦'}</> : <>{registering ? 'Create account' : 'Sign in'} <span>â†’</span></>}</button>
       </form>
       <p className="switch-copy">{registering ? 'Already have an account?' : 'New to VersionWise?'} <button type="button" onClick={() => { setMode(registering ? 'login' : 'register'); setNotice(null); setErrors({}) }}>{registering ? 'Sign in' : 'Create an account'}</button></p>
-      <p className="security-note">▣ Your password is never stored by this frontend.</p>
-    </div><footer className="form-footer"><span>© 2026 VersionWise</span><span>DEPENDENCY UPGRADE INTELLIGENCE</span></footer></section>
+      <p className="security-note">â–£ Your password is never stored by this frontend.</p>
+    </div><footer className="form-footer"><span>Â© 2026 VersionWise</span><span>DEPENDENCY UPGRADE INTELLIGENCE</span></footer></section>
   </main>
 }
 
@@ -91,6 +91,11 @@ function Dashboard({ session, onLogout }) {
   const [formError, setFormError] = useState('')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [dependency, setDependency] = useState({ groupId: '', artifactId: '', currentVersion: '', targetVersion: '' })
+  const [analysisBusy, setAnalysisBusy] = useState(false)
+  const [analysisError, setAnalysisError] = useState('')
+  const [analysisResults, setAnalysisResults] = useState(null)
+  const [pomFile, setPomFile] = useState(null)
 
   const handleError = useCallback((err) => {
     if (err?.status === 401) {
@@ -200,6 +205,9 @@ function Dashboard({ session, onLogout }) {
   async function viewProject(project) {
     setDetailLoading(true)
     setSelectedProject(null)
+    setAnalysisResults(null)
+    setAnalysisError('')
+    setPomFile(null)
     setError('')
     setNotice('')
     try {
@@ -237,6 +245,71 @@ function Dashboard({ session, onLogout }) {
     } finally {
       setDeletingId(null)
     }
+  }
+
+  async function submitDependencyAnalysis(event) {
+    event.preventDefault()
+    setAnalysisError('')
+    setAnalysisResults(null)
+
+    const clean = Object.fromEntries(Object.entries(dependency).map(([key, value]) => [key, value.trim()]))
+    if (Object.values(clean).some(value => !value)) {
+      setAnalysisError('Complete all four dependency fields before analyzing.')
+      return
+    }
+    if (!selectedProject?.id) {
+      setAnalysisError('Select a project before analyzing a dependency.')
+      return
+    }
+
+    const requestBody = {
+      group_id: clean.groupId,
+      artifact_id: clean.artifactId,
+      current_version: clean.currentVersion,
+      target_version: clean.targetVersion,
+    }
+
+    if (pomFile && pomFile.size > 2_000_000) {
+      setAnalysisError('pom.xml must be 2 MB or smaller.')
+      return
+    }
+
+    setAnalysisBusy(true)
+    try {
+      const basePath = `/api/projects/${selectedProject.id}/analysis`
+      let projectContext = null
+      if (pomFile) {
+        const pomXml = await pomFile.text()
+        projectContext = await apiRequest(`${basePath}/parse-pom`, {
+          method: 'POST', token: session.accessToken, body: { pom_xml: pomXml },
+        })
+      }
+      const riskAnalysis = await apiRequest(`${basePath}/analyze-upgrade`, {
+        method: 'POST', token: session.accessToken, body: requestBody,
+      })
+      const assessment = await apiRequest(`${basePath}/assess-upgrade`, {
+        method: 'POST', token: session.accessToken, body: { ...requestBody, project_context: projectContext },
+      })
+      setAnalysisResults({ riskAnalysis, assessment })
+    } catch (err) {
+      setAnalysisError(handleError(err))
+    } finally {
+      setAnalysisBusy(false)
+    }
+  }
+
+  function renderStringList(items, emptyText = 'No items reported.') {
+    if (!Array.isArray(items) || items.length === 0) return <p className="analysis-empty">{emptyText}</p>
+    return <ul className="analysis-list">{items.map((item, index) => <li key={index}>{item}</li>)}</ul>
+  }
+
+  function renderFindings(items, emptyText = 'No findings reported.') {
+    if (!Array.isArray(items) || items.length === 0) return <p className="analysis-empty">{emptyText}</p>
+    return <div className="finding-list">{items.map((finding, index) => <article className="finding" key={`${finding.title || 'finding'}-${index}`}>
+      <div className="finding-heading"><strong>{finding.title || 'Finding'}</strong>{finding.severity && <span className={`severity severity-${finding.severity.toLowerCase()}`}>{finding.severity}</span>}</div>
+      <p>{finding.description || 'No description provided.'}</p>
+      {Array.isArray(finding.evidenceIds) && finding.evidenceIds.length > 0 && <p className="evidence-ids">Evidence IDs: {finding.evidenceIds.join(', ')}</p>}
+    </article>)}</div>
   }
 
   function formatDate(value) {
@@ -299,13 +372,13 @@ function Dashboard({ session, onLogout }) {
               <p>{projects.length} {projects.length === 1 ? 'project' : 'projects'} in your workspace</p>
             </div>
             <button className="secondary-button" type="button" onClick={loadProjects} disabled={loading}>
-              {loading ? 'Refreshing…' : 'Refresh'}
+              {loading ? 'Refreshingâ€¦' : 'Refresh'}
             </button>
           </div>
 
           {loading ? (
             <div className="projects-state">
-              <span className="spinner" /> Loading your projects…
+              <span className="spinner" /> Loading your projectsâ€¦
             </div>
           ) : error && projects.length === 0 ? (
             <div className="projects-state">
@@ -349,7 +422,7 @@ function Dashboard({ session, onLogout }) {
                       onClick={() => deleteProject(project)}
                       disabled={deletingId === project.id}
                     >
-                      {deletingId === project.id ? 'Deleting…' : 'Delete'}
+                      {deletingId === project.id ? 'Deletingâ€¦' : 'Delete'}
                     </button>
                   </div>
                 </article>
@@ -358,7 +431,7 @@ function Dashboard({ session, onLogout }) {
           )}
         </section>
 
-        {detailLoading && <div className="detail-panel">Loading project details…</div>}
+        {detailLoading && <div className="detail-panel">Loading project detailsâ€¦</div>}
 
         {selectedProject && (
           <section className="detail-panel">
@@ -388,6 +461,48 @@ function Dashboard({ session, onLogout }) {
                 <dd>{formatDate(selectedProject.createdAt)}</dd>
               </div>
             </dl>
+            <section className="analysis-card">
+              <div className="analysis-card-heading">
+                <p className="form-kicker">DEPENDENCY ANALYSIS</p>
+                <h3>Analyze an upgrade</h3>
+                <p>Enter the dependency coordinates and compare the current version with your target version.</p>
+              </div>
+              <form className="dependency-form" onSubmit={submitDependencyAnalysis} noValidate>
+                <div className="dependency-fields">
+                  <div><label htmlFor="dependency-group">Group ID</label><input id="dependency-group" value={dependency.groupId} onChange={e => setDependency(p => ({ ...p, groupId: e.target.value }))} placeholder="org.springframework" maxLength={300} /></div>
+                  <div><label htmlFor="dependency-artifact">Artifact ID</label><input id="dependency-artifact" value={dependency.artifactId} onChange={e => setDependency(p => ({ ...p, artifactId: e.target.value }))} placeholder="spring-core" maxLength={300} /></div>
+                  <div><label htmlFor="dependency-current">Current version</label><input id="dependency-current" value={dependency.currentVersion} onChange={e => setDependency(p => ({ ...p, currentVersion: e.target.value }))} placeholder="6.2.0" maxLength={200} /></div>
+                  <div><label htmlFor="dependency-target">Target version</label><input id="dependency-target" value={dependency.targetVersion} onChange={e => setDependency(p => ({ ...p, targetVersion: e.target.value }))} placeholder="6.2.1" maxLength={200} /></div>
+                </div>
+                <div className="pom-upload-field">
+                  <label htmlFor="project-pom">Project POM <span className="optional-label">(optional, improves contextual assessment)</span></label>
+                  <input id="project-pom" type="file" accept=".xml" onChange={event => { setPomFile(event.target.files?.[0] || null); setAnalysisError(''); setAnalysisResults(null) }} />
+                  {pomFile && <p className="pom-file-selected">Selected: {pomFile.name}</p>}
+                  <p className="pom-help">VersionWise parses the POM and sends structured project context to the AI. The file is not stored by this frontend.</p>
+                </div>
+                {analysisError && <div className="notice error" role="alert">{analysisError}</div>}
+                <button className="primary-button analysis-submit" type="submit" disabled={analysisBusy}>{analysisBusy ? <><span className="spinner" /> Running analysis…</> : <>Analyze upgrade <span>→</span></>}</button>
+              </form>
+
+              {analysisResults && <div className="analysis-results">
+                <section className="risk-summary">
+                  <div><p className="card-label">DETERMINISTIC RISK SCORE</p><strong className="risk-score">{analysisResults.riskAnalysis.riskScore}<span>/100</span></strong></div>
+                  <span className={`risk-category risk-${String(analysisResults.riskAnalysis.riskCategory || '').toLowerCase()}`}>{analysisResults.riskAnalysis.riskCategory || 'Uncategorized'}</span>
+                  <p>{analysisResults.riskAnalysis.comparison || 'Version comparison unavailable.'}</p>
+                  <p className="score-disclaimer">This score is a heuristic risk score, not a probability.</p>
+                </section>
+                <div className="analysis-section"><h4>Risk factors</h4>{Array.isArray(analysisResults.riskAnalysis.factors) && analysisResults.riskAnalysis.factors.length ? <div className="finding-list">{analysisResults.riskAnalysis.factors.map((factor, index) => <article className="finding" key={`${factor.ruleId || factor.name}-${index}`}><div className="finding-heading"><strong>{factor.name || factor.ruleId || 'Risk factor'}</strong><span className="factor-contribution">+{factor.contribution}</span></div><p>{factor.explanation}</p><p className="evidence-ids">{factor.evaluated ? 'Evaluated' : 'Not evaluated'}{factor.evidenceSource ? ` · ${factor.evidenceSource}` : ''}</p></article>)}</div> : <p className="analysis-empty">No risk factors returned.</p>}</div>
+                <div className="analysis-section"><h4>Warnings</h4>{renderStringList(analysisResults.riskAnalysis.warnings)}</div>
+                <div className="analysis-section"><h4>Recommendations</h4>{renderStringList(analysisResults.riskAnalysis.recommendations)}</div>
+                <section className="assessment-summary"><p className="card-label">AI ASSESSMENT · {analysisResults.assessment.status || 'STATUS UNAVAILABLE'}</p><p>{analysisResults.assessment.summary || 'No summary returned.'}</p></section>
+                <div className="analysis-section"><h4>Compatibility findings</h4>{renderFindings(analysisResults.assessment.compatibilityFindings)}</div>
+                <div className="analysis-section"><h4>Breaking changes</h4>{renderFindings(analysisResults.assessment.breakingChanges)}</div>
+                <div className="analysis-section"><h4>Migration concerns</h4>{renderFindings(analysisResults.assessment.migrationConcerns)}</div>
+                <div className="analysis-section"><h4>Security findings</h4>{renderFindings(analysisResults.assessment.securityFindings)}</div>
+                <div className="analysis-section"><h4>Evidence</h4>{Array.isArray(analysisResults.assessment.evidence) && analysisResults.assessment.evidence.length ? <div className="evidence-list">{analysisResults.assessment.evidence.map((item, index) => <article className="evidence-item" key={`${item.sourceUri || item.sourceTitle}-${index}`}><strong>{item.sourceTitle || 'Source'}</strong>{item.sourceUri && <a href={item.sourceUri} target="_blank" rel="noreferrer">Open source ↗</a>}<p>{item.excerpt || 'No excerpt provided.'}</p>{item.retrievalTimestamp && <span>{item.retrievalTimestamp}</span>}</article>)}</div> : <p className="analysis-empty">No evidence returned.</p>}</div>
+                <div className="analysis-section"><h4>Limitations</h4>{renderStringList(analysisResults.assessment.limitations)}</div>
+              </div>}
+            </section>
             <button className="primary-button" type="button" onClick={() => openEditForm(selectedProject)}>
               Edit project
             </button>
@@ -404,7 +519,7 @@ function Dashboard({ session, onLogout }) {
                   <p className="form-kicker">{editingProject ? 'UPDATE WORKSPACE' : 'GET STARTED'}</p>
                   <h2 id="project-form-title">{editingProject ? 'Edit project' : 'Create a project'}</h2>
                 </div>
-                <button className="modal-close" type="button" onClick={closeForm} aria-label="Close form">×</button>
+                <button className="modal-close" type="button" onClick={closeForm} aria-label="Close form">Ã—</button>
               </div>
 
               <form onSubmit={submitProject} noValidate>
@@ -440,7 +555,7 @@ function Dashboard({ session, onLogout }) {
                     Cancel
                   </button>
                   <button className="primary-button" type="submit" disabled={saving}>
-                    {saving ? 'Saving…' : editingProject ? 'Save changes' : 'Create project'}
+                    {saving ? 'Savingâ€¦' : editingProject ? 'Save changes' : 'Create project'}
                   </button>
                 </div>
               </form>
@@ -449,13 +564,13 @@ function Dashboard({ session, onLogout }) {
         )}
 
         <p className="scope-note">
-          <strong>Day 5 milestone</strong><br />
-          Project management is connected to your authenticated backend. Dependency analysis will be added in a later milestone.
+          <strong>Dependency analysis milestone</strong><br />
+          Upgrade risk analysis and evidence-grounded AI assessment are now available from a project’s details.
         </p>
       </section>
 
       <footer className="dashboard-footer">
-        VERSIONWISE <span>•</span> DEPENDENCY UPGRADE INTELLIGENCE
+        VERSIONWISE <span>â€¢</span> DEPENDENCY UPGRADE INTELLIGENCE
       </footer>
     </main>
   )

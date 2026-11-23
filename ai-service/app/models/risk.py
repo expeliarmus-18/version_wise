@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -16,6 +16,7 @@ class UpgradeAnalysisRequest(BaseModel):
         default=None, alias="versionResolution"
     )
     metadata_available: Optional[bool] = Field(default=None, alias="metadataAvailable")
+    project_context: Optional[dict[str, Any]] = Field(default=None, alias="projectContext")
 
 
 class RiskFactor(BaseModel):
